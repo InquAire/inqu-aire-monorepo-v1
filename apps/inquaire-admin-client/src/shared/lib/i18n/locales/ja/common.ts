@@ -1,0 +1,266 @@
+export default {
+  // 共通
+  common: {
+    save: '保存',
+    cancel: 'キャンセル',
+    delete: '削除',
+    edit: '編集',
+    add: '追加',
+    create: '作成',
+    update: '更新',
+    search: '検索',
+    filter: 'フィルター',
+    export: 'エクスポート',
+    import: 'インポート',
+    refresh: '更新',
+    close: '閉じる',
+    confirm: '確認',
+    back: '戻る',
+    next: '次へ',
+    previous: '前へ',
+    loading: '読み込み中...',
+    noData: 'データがありません',
+    error: 'エラーが発生しました',
+    success: '成功',
+    warning: '警告',
+    info: '情報',
+    yes: 'はい',
+    no: 'いいえ',
+    all: 'すべて',
+    active: 'アクティブ',
+    inactive: '非アクティブ',
+    total: '合計',
+    actions: '操作',
+    status: 'ステータス',
+    date: '日付',
+    createdAt: '作成日時',
+    updatedAt: '更新日時',
+    description: '説明',
+    name: '名前',
+    email: 'メールアドレス',
+    phone: '電話番号',
+    address: '住所',
+    settings: '設定',
+    logout: 'ログアウト',
+    profile: 'プロフィール',
+  },
+
+  // ナビゲーション
+  nav: {
+    dashboard: 'ダッシュボード',
+    businesses: '事業者管理',
+    inquiries: 'お問い合わせ管理',
+    customers: '顧客管理',
+    channels: 'チャネル管理',
+    users: 'ユーザー管理',
+    subscription: 'サブスクリプション',
+    replyTemplates: '返信テンプレート',
+    settings: '設定',
+    errorLogs: 'エラーログ',
+    webhookEvents: 'Webhookイベント',
+  },
+
+  // ダッシュボード
+  dashboard: {
+    title: 'ダッシュボード',
+    overview: '概要',
+    statistics: '統計',
+    recentInquiries: '最近のお問い合わせ',
+    totalInquiries: '総お問い合わせ数',
+    pendingInquiries: '保留中のお問い合わせ',
+    resolvedInquiries: '解決済みのお問い合わせ',
+    averageResponseTime: '平均応答時間',
+    customerSatisfaction: '顧客満足度',
+    inquiryTrend: 'お問い合わせトレンド',
+    sentimentAnalysis: '感情分析',
+    platformDistribution: 'プラットフォーム別分布',
+    responseTimeTrend: '応答時間トレンド',
+  },
+
+  // 事業者
+  business: {
+    title: '事業者管理',
+    addBusiness: '事業者を追加',
+    editBusiness: '事業者を編集',
+    businessName: '事業者名',
+    businessType: '業種',
+    owner: '所有者',
+    contactInfo: '連絡先情報',
+    totalBusinesses: '総事業者数',
+    activeBusinesses: 'アクティブな事業者',
+    newThisMonth: '今月の新規',
+    industryCount: '業種数',
+  },
+
+  // お問い合わせ
+  inquiry: {
+    title: 'お問い合わせ管理',
+    addInquiry: 'お問い合わせを追加',
+    editInquiry: 'お問い合わせを編集',
+    inquiryId: 'お問い合わせID',
+    customer: '顧客',
+    channel: 'チャネル',
+    content: '内容',
+    reply: '返信',
+    sentiment: '感情',
+    category: 'カテゴリー',
+    pending: '保留中',
+    processing: '処理中',
+    resolved: '解決済み',
+    closed: '終了',
+    positive: 'ポジティブ',
+    neutral: 'ニュートラル',
+    negative: 'ネガティブ',
+    analyzeWithAI: 'AIで分析',
+  },
+
+  // 顧客
+  customer: {
+    title: '顧客管理',
+    addCustomer: '顧客を追加',
+    editCustomer: '顧客を編集',
+    customerId: '顧客ID',
+    customerName: '顧客名',
+    platform: 'プラットフォーム',
+    totalCustomers: '総顧客数',
+    newCustomers: '新規顧客',
+    activeCustomers: 'アクティブな顧客',
+    inquiryCount: 'お問い合わせ数',
+    lastInquiry: '最後のお問い合わせ',
+    mergeCustomers: '顧客を統合',
+  },
+
+  // チャネル
+  channel: {
+    title: 'チャネル管理',
+    addChannel: 'チャネルを追加',
+    editChannel: 'チャネルを編集',
+    channelName: 'チャネル名',
+    channelType: 'チャネルタイプ',
+    webhookUrl: 'Webhook URL',
+    autoReply: '自動返信',
+    regenerateWebhook: 'Webhookを再生成',
+    toggleActive: 'アクティブ切替',
+    toggleAutoReply: '自動返信切替',
+  },
+
+  // ユーザー
+  user: {
+    title: 'ユーザー管理',
+    addUser: 'ユーザーを追加',
+    editUser: 'ユーザーを編集',
+    userName: 'ユーザー名',
+    role: '役割',
+    changeRole: '役割を変更',
+    admin: '管理者',
+    superAdmin: 'スーパー管理者',
+    manager: 'マネージャー',
+    staff: 'スタッフ',
+  },
+
+  // サブスクリプション
+  subscription: {
+    title: 'サブスクリプション管理',
+    currentPlan: '現在のプラン',
+    changePlan: 'プランを変更',
+    billingHistory: '請求履歴',
+    usage: '使用状況',
+    freePlan: '無料',
+    basicPlan: 'ベーシック',
+    proPlan: 'プロ',
+    enterprisePlan: 'エンタープライズ',
+    monthlyInquiries: '月間お問い合わせ数',
+    channels: 'チャネル数',
+    users: 'ユーザー数',
+  },
+
+  // テンプレート
+  template: {
+    title: '返信テンプレート',
+    addTemplate: 'テンプレートを追加',
+    editTemplate: 'テンプレートを編集',
+    templateName: 'テンプレート名',
+    templateContent: 'テンプレート内容',
+    variables: '変数',
+    usageCount: '使用回数',
+  },
+
+  // 設定
+  settings: {
+    title: '設定',
+    profile: 'プロフィール設定',
+    security: 'セキュリティ設定',
+    notifications: '通知設定',
+    language: '言語設定',
+    theme: 'テーマ設定',
+    changePassword: 'パスワードを変更',
+    currentPassword: '現在のパスワード',
+    newPassword: '新しいパスワード',
+    confirmPassword: 'パスワード確認',
+  },
+
+  // エラーログ
+  errorLog: {
+    title: 'エラーログ',
+    errorType: 'エラータイプ',
+    errorMessage: 'エラーメッセージ',
+    stackTrace: 'スタックトレース',
+    resolve: '解決',
+    resolved: '解決済み',
+    unresolved: '未解決',
+  },
+
+  // Webhookイベント
+  webhookEvent: {
+    title: 'Webhookイベント',
+    eventType: 'イベントタイプ',
+    payload: 'ペイロード',
+    retry: '再試行',
+    success: '成功',
+    failed: '失敗',
+  },
+
+  // テーマ
+  theme: {
+    light: 'ライトモード',
+    dark: 'ダークモード',
+    system: 'システム設定',
+  },
+
+  // 言語
+  language: {
+    korean: '한국어',
+    english: 'English',
+    japanese: '日本語',
+  },
+
+  // メッセージ
+  message: {
+    confirmDelete: '本当に削除しますか？',
+    deleteSuccess: '正常に削除されました',
+    saveSuccess: '正常に保存されました',
+    updateSuccess: '正常に更新されました',
+    createSuccess: '正常に作成されました',
+    errorOccurred: 'エラーが発生しました',
+    invalidInput: '入力が無効です',
+    requiredField: 'この項目は必須です',
+    sessionExpired: 'セッションが期限切れです',
+    loginRequired: 'ログインが必要です',
+    permissionDenied: '権限がありません',
+  },
+
+  // 日時
+  datetime: {
+    today: '今日',
+    yesterday: '昨日',
+    thisWeek: '今週',
+    thisMonth: '今月',
+    lastWeek: '先週',
+    lastMonth: '先月',
+    custom: 'カスタム',
+    startDate: '開始日',
+    endDate: '終了日',
+    selectDate: '日付を選択',
+    selectDateRange: '期間を選択',
+  },
+};

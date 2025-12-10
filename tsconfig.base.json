@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "lib": ["ES2022"],
+    "skipLibCheck": true,
+    "strict": true,
+    "moduleResolution": "Node",
+    "baseUrl": ".",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "paths": {
+      "@ai-next/nestjs-shared": ["node_modules/@ai-next/nestjs-shared"],
+      "@ai-next/nestjs-shared/*": ["node_modules/@ai-next/nestjs-shared/*"]
+    }
+  }
+}

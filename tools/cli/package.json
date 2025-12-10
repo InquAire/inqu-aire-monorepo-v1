@@ -1,0 +1,34 @@
+{
+  "name": "ai-cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "bin": {
+    "ai": "dist/index.js"
+  },
+  "scripts": {
+    "build:cli": "pnpm --filter ai-cli build",
+    "pk": "pnpm --filter ai-cli build && node dist/index.js",
+    "clean": "rimraf dist",
+    "build": "tsc -p tsconfig.json",
+    "postbuild": "chmod +x dist/index.js || true",
+    "prepare": "tsc -p tsconfig.json",
+    "dev": "ts-node src/index.ts --help"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "dotenv-expand": "^11.0.6",
+    "execa": "^8.0.1",
+    "kleur": "^4.1.5",
+    "openai": "^4.73.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.12",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  }
+}

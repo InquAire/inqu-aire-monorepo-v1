@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "files": [],
+  "references": [
+    { "path": "packages/nestjs-shared" },
+    { "path": "apps/inquaire-api-server" },
+    { "path": "packages/prisma" },
+    { "path": "tools/cli" }
+  ],
+  "exclude": ["node_modules", "**/dist", "**/.turbo", "**/.next"]
+}

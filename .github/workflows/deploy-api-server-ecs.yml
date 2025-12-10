@@ -1,0 +1,393 @@
+name: Deploy API Server to ECS (Multi-Region)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api-server/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/deploy-api-server-ecs.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '배포 대상 환경'
+        required: false
+        type: choice
+        default: Staging
+        options: [Staging, Production]
+
+permissions:
+  contents: read
+  id-token: write
+
+# 배포 동시성 그룹은 소문자(=실제 런타임 env)로 고정
+concurrency:
+  group: api-server-ecs-${{ (github.event.inputs.environment == 'Production' && 'production') || (github.event.inputs.environment == 'Staging' && 'staging') || (github.ref == 'refs/heads/main' && 'production') || (github.ref == 'refs/heads/develop' && 'staging') || 'staging' }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'Production') || (github.ref == 'refs/heads/develop' && 'Staging') || 'Staging' }}
+
+    env:
+      DEPLOY_ENV: ${{ (github.event.inputs.environment == 'Production' && 'production') || (github.event.inputs.environment == 'Staging' && 'staging') || (github.ref == 'refs/heads/main' && 'production') || (github.ref == 'refs/heads/develop' && 'staging') || 'staging' }}
+      DOCKER_BUILDKIT: 1
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      ECR_REPOSITORY: ${{ secrets.API_ECR_REPOSITORY }}
+
+    outputs:
+      image-tag: ${{ steps.meta.outputs.image_tag }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare Prisma environment file
+        run: |
+          # 더미 URL 사용 (prisma generate는 실제 연결 안 함)
+          # 실제 DB 연결은 런타임에 ECS 태스크 정의의 secrets에서 관리됨
+          bash scripts/deploy/api-server-ecs/prepare-prisma-env.sh \
+            "" \
+            ""
+
+      - name: 이미지 태그 생성
+        id: meta
+        shell: bash
+        run: |
+          sha_short="${GITHUB_SHA:0:7}"
+          image_tag="${DEPLOY_ENV}-${sha_short}"
+          echo "image_tag=${image_tag}" >> "$GITHUB_OUTPUT"
+          echo "IMAGE_TAG=${image_tag}" >> "$GITHUB_ENV"
+
+      - name: Docker 이미지 빌드
+        run: |
+          bash scripts/deploy/api-server-ecs/build-docker-image.sh "${IMAGE_TAG}"
+
+      - name: Configure AWS credentials for image push
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.API_AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Push Docker image to ECR repositories
+        run: |
+          regions=("us-east-1" "eu-west-1")
+          for region in "${regions[@]}"; do
+            ecr_registry="${AWS_ACCOUNT_ID}.dkr.ecr.${region}.amazonaws.com"
+            image_uri="${ecr_registry}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+            image_latest="${ecr_registry}/${ECR_REPOSITORY}:${DEPLOY_ENV}-latest"
+
+            echo "🔐 Logging in to ECR ${region}"
+            aws ecr get-login-password --region "${region}" | docker login --username AWS --password-stdin "${ecr_registry}"
+
+            echo "🔍 Ensuring repository ${ECR_REPOSITORY} exists in ${region}"
+            if ! aws ecr describe-repositories --repository-names "${ECR_REPOSITORY}" --region "${region}" >/dev/null 2>&1; then
+              aws ecr create-repository \
+                --repository-name "${ECR_REPOSITORY}" \
+                --region "${region}" \
+                --image-scanning-configuration scanOnPush=true \
+                --encryption-configuration encryptionType=AES256
+            fi
+
+            echo "🏷️ Tagging image for ${region}"
+            docker tag api-server:${IMAGE_TAG} "${image_uri}"
+            docker tag api-server:${IMAGE_TAG} "${image_latest}"
+
+            echo "🚀 Pushing ${image_uri}"
+            docker push "${image_uri}"
+            echo "🚀 Pushing ${image_latest}"
+            docker push "${image_latest}"
+          done
+
+      - name: Clean up local images
+        if: always()
+        run: |
+          docker image rm "api-server:${IMAGE_TAG}" || true
+
+  deploy:
+    name: Deploy to ECS (${{ matrix.region }})
+    needs: build
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'Production') || (github.ref == 'refs/heads/develop' && 'Staging') || 'Staging' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        region:
+          - name: us-east-1
+            display: '미국 동부 (버지니아 북부)'
+          - name: eu-west-1
+            display: '유럽 (아일랜드)'
+
+    env:
+      DEPLOY_ENV: ${{ (github.event.inputs.environment == 'Production' && 'production') || (github.event.inputs.environment == 'Staging' && 'staging') || (github.ref == 'refs/heads/main' && 'production') || (github.ref == 'refs/heads/develop' && 'staging') || 'staging' }}
+      AWS_REGION: ${{ matrix.region.name }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      ECR_REPOSITORY: ${{ secrets.API_ECR_REPOSITORY }}
+      ECS_CONTAINER_NAME: api-server
+      ECS_CLUSTER_US_EAST_1: ${{ secrets.API_ECS_CLUSTER_US_EAST_1 }}
+      ECS_CLUSTER_EU_WEST_1: ${{ secrets.API_ECS_CLUSTER_EU_WEST_1 }}
+      ECS_SERVICE_US_EAST_1: ${{ secrets.API_ECS_SERVICE_US_EAST_1 }}
+      ECS_SERVICE_EU_WEST_1: ${{ secrets.API_ECS_SERVICE_EU_WEST_1 }}
+      ECS_TASK_DEFINITION_US_EAST_1: ${{ secrets.API_ECS_TASK_DEFINITION_US_EAST_1 }}
+      ECS_TASK_DEFINITION_EU_WEST_1: ${{ secrets.API_ECS_TASK_DEFINITION_EU_WEST_1 }}
+      ECS_TASK_ROLE_ARN_US_EAST_1: ${{ secrets.API_ECS_TASK_ROLE_ARN_US_EAST_1 }}
+      ECS_TASK_ROLE_ARN_EU_WEST_1: ${{ secrets.API_ECS_TASK_ROLE_ARN_EU_WEST_1 }}
+      ECS_EXECUTION_ROLE_ARN_US_EAST_1: ${{ secrets.API_ECS_EXECUTION_ROLE_ARN_US_EAST_1 }}
+      ECS_EXECUTION_ROLE_ARN_EU_WEST_1: ${{ secrets.API_ECS_EXECUTION_ROLE_ARN_EU_WEST_1 }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 배포 환경 검증
+        id: validate
+        shell: bash
+        run: |
+          bash scripts/deploy/api-server-ecs/validate-deployment.sh \
+            "${DEPLOY_ENV}" \
+            "${AWS_REGION}" \
+            "${ECS_CLUSTER_US_EAST_1}" \
+            "${ECS_CLUSTER_EU_WEST_1}" \
+            "${ECS_SERVICE_US_EAST_1}" \
+            "${ECS_SERVICE_EU_WEST_1}" \
+            "${ECS_TASK_DEFINITION_US_EAST_1}" \
+            "${ECS_TASK_DEFINITION_EU_WEST_1}"
+
+          if [[ -z "${AWS_ACCOUNT_ID}" ]]; then
+            echo "AWS_ACCOUNT_ID가 설정되지 않았습니다" >&2
+            exit 1
+          fi
+
+      - name: Resolve region-specific IAM roles
+        run: |
+          case "${AWS_REGION}" in
+            us-east-1)
+              if [ -z "${ECS_TASK_ROLE_ARN_US_EAST_1}" ] || [ -z "${ECS_EXECUTION_ROLE_ARN_US_EAST_1}" ]; then
+                echo "us-east-1 역할 ARN이 설정되지 않았습니다" >&2
+                exit 1
+              fi
+              {
+                echo "ECS_TASK_ROLE_ARN=${ECS_TASK_ROLE_ARN_US_EAST_1}"
+                echo "ECS_EXECUTION_ROLE_ARN=${ECS_EXECUTION_ROLE_ARN_US_EAST_1}"
+              } >> "$GITHUB_ENV"
+              ;;
+            eu-west-1)
+              if [ -z "${ECS_TASK_ROLE_ARN_EU_WEST_1}" ] || [ -z "${ECS_EXECUTION_ROLE_ARN_EU_WEST_1}" ]; then
+                echo "eu-west-1 역할 ARN이 설정되지 않았습니다" >&2
+                exit 1
+              fi
+              {
+                echo "ECS_TASK_ROLE_ARN=${ECS_TASK_ROLE_ARN_EU_WEST_1}"
+                echo "ECS_EXECUTION_ROLE_ARN=${ECS_EXECUTION_ROLE_ARN_EU_WEST_1}"
+              } >> "$GITHUB_ENV"
+              ;;
+            *)
+              echo "지원하지 않는 리전: ${AWS_REGION}" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Print resolved deployment context
+        run: |
+          echo "Branch: ${GITHUB_REF}"
+          echo "Deploy env: ${DEPLOY_ENV}"
+          echo "Region: ${AWS_REGION}"
+          echo "ECS task definition: ${ECS_TASK_DEFINITION:-<unset>}"
+          echo "ECS cluster: ${ECS_CLUSTER:-<unset>}"
+          echo "ECS service: ${ECS_SERVICE:-<unset>}"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.API_AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-DeployAPI-${{ github.run_id }}-${{ matrix.region.name }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 이미지 메타데이터 설정
+        run: |
+          image_tag="${{ needs.build.outputs.image-tag }}"
+          if [ -z "$image_tag" ]; then
+            sha_short="${GITHUB_SHA:0:7}"
+            image_tag="${DEPLOY_ENV}-${sha_short}"
+          fi
+          ecr_registry="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+          echo "IMAGE_TAG=${image_tag}" >> "$GITHUB_ENV"
+          echo "IMAGE_URI=${ecr_registry}/${ECR_REPOSITORY}:${image_tag}" >> "$GITHUB_ENV"
+          echo "IMAGE_LATEST=${ecr_registry}/${ECR_REPOSITORY}:${DEPLOY_ENV}-latest" >> "$GITHUB_ENV"
+          echo "ECR_REGISTRY=${ecr_registry}" >> "$GITHUB_ENV"
+
+      - name: ECR 리포지토리 확인 및 생성
+        run: |
+          echo "ECR 리포지토리 확인 중: ${ECR_REPOSITORY}"
+          if ! aws ecr describe-repositories --repository-names "${ECR_REPOSITORY}" --region "${AWS_REGION}" 2>/dev/null; then
+            echo "ECR 리포지토리가 존재하지 않습니다. 생성 중..."
+            aws ecr create-repository \
+              --repository-name "${ECR_REPOSITORY}" \
+              --region "${AWS_REGION}" \
+              --image-scanning-configuration scanOnPush=true \
+              --encryption-configuration encryptionType=AES256
+          else
+            echo "ECR 리포지토리가 이미 존재합니다."
+          fi
+
+      - name: ECS 태스크 정의 다운로드
+        id: task-def
+        run: |
+          bash scripts/deploy/api-server-ecs/download-task-definition.sh \
+            "${ECS_TASK_DEFINITION}" \
+            "${AWS_REGION}" \
+            "task-definition.json"
+
+      - name: 태스크 정의 생성 또는 업데이트
+        id: new-task-def
+        run: |
+          bash scripts/deploy/api-server-ecs/prepare-task-definition.sh \
+            "${{ steps.task-def.outputs.task_def_exists }}" \
+            "${ECS_TASK_DEFINITION}" \
+            "${IMAGE_URI}" \
+            "${ECS_CONTAINER_NAME}" \
+            "${AWS_REGION}" \
+            "task-definition.json" \
+            "new-task-definition.json"
+
+      - name: 새 태스크 정의 등록
+        id: register-task
+        run: |
+          task_def_arn=$(aws ecs register-task-definition \
+            --cli-input-json file://new-task-definition.json \
+            --region "${AWS_REGION}" \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+
+          if [[ -z "$task_def_arn" ]]; then
+            echo "태스크 정의 등록 실패" >&2
+            exit 1
+          fi
+
+          echo "새 태스크 정의 ARN: ${task_def_arn}"
+          echo "task_def_arn=${task_def_arn}" >> "$GITHUB_OUTPUT"
+          echo "TASK_DEF_ARN=${task_def_arn}" >> "$GITHUB_ENV"
+
+      - name: CloudWatch Logs 그룹 생성
+        run: |
+          log_group="/ecs/${ECS_TASK_DEFINITION}"
+          if ! aws logs describe-log-groups --log-group-name-prefix "$log_group" --region "${AWS_REGION}" --query "logGroups[?logGroupName=='$log_group']" --output text | grep -q "$log_group"; then
+            echo "CloudWatch Logs 그룹 생성 중: ${log_group}"
+            aws logs create-log-group \
+              --log-group-name "$log_group" \
+              --region "${AWS_REGION}" || true
+          else
+            echo "CloudWatch Logs 그룹이 이미 존재합니다: ${log_group}"
+          fi
+
+      - name: ECS 서비스 확인 및 생성
+        run: |
+          service_exists=$(aws ecs describe-services \
+            --cluster "${ECS_CLUSTER}" \
+            --services "${ECS_SERVICE}" \
+            --region "${AWS_REGION}" \
+            --query 'services[0].status' \
+            --output text 2>/dev/null || echo "INACTIVE")
+
+          if [[ "$service_exists" == "INACTIVE" || "$service_exists" == "None" ]]; then
+            echo "⚠️ ECS 서비스가 존재하지 않습니다. 수동으로 생성해야 합니다."
+            echo "클러스터: ${ECS_CLUSTER}"
+            echo "서비스: ${ECS_SERVICE}"
+            echo "태스크 정의: ${TASK_DEF_ARN}"
+            exit 1
+          else
+            echo "ECS 서비스가 존재합니다: ${ECS_SERVICE}"
+          fi
+
+      - name: ECS 서비스 업데이트
+        run: |
+          echo "ECS 서비스 업데이트 중..."
+          echo "리전: ${AWS_REGION} (${{ matrix.region.display }})"
+          echo "클러스터: ${ECS_CLUSTER}"
+          echo "서비스: ${ECS_SERVICE}"
+          echo "새 태스크 정의: ${TASK_DEF_ARN}"
+
+          # 현재 서비스의 PRIMARY 배포 태스크 정의 확인
+          current_service=$(aws ecs describe-services \
+            --cluster "${ECS_CLUSTER}" \
+            --services "${ECS_SERVICE}" \
+            --region "${AWS_REGION}" \
+            --query 'services[0]' \
+            --output json)
+
+          current_task_def=$(echo "$current_service" | jq -r '.deployments[] | select(.status == "PRIMARY") | .taskDefinition // ""')
+          echo "현재 PRIMARY 태스크 정의: ${current_task_def}"
+
+          # 이미 같은 태스크 정의로 배포 중이면 스킵
+          if [[ "$current_task_def" == "${TASK_DEF_ARN}" ]]; then
+            echo "⚠️ 이미 같은 태스크 정의로 배포 중입니다. 새 배포를 시작하지 않습니다."
+            echo "현재 배포 상태:"
+            echo "$current_service" | jq '{runningCount, desiredCount, deployments: .deployments[] | {taskDefinition, status, runningCount, desiredCount}}'
+            exit 0
+          fi
+
+          # 배포 설정 확인 (배포 진행 중이면 대기)
+          active_deployments=$(echo "$current_service" | jq -r '[.deployments[] | select(.status == "PRIMARY" or .status == "ACTIVE")] | length')
+          if [ "$active_deployments" -gt 1 ]; then
+            echo "⚠️ 이미 배포가 진행 중입니다. 배포가 완료될 때까지 대기합니다..."
+            # 기존 배포가 완료될 때까지 대기하는 로직은 배포 상태 확인 단계에서 처리됨
+          fi
+
+          aws ecs update-service \
+            --cluster "${ECS_CLUSTER}" \
+            --service "${ECS_SERVICE}" \
+            --task-definition "${TASK_DEF_ARN}" \
+            --region "${AWS_REGION}" \
+            --force-new-deployment \
+            --query 'service.serviceName' \
+            --output text
+
+          echo "ECS 서비스 업데이트 요청 완료"
+
+      - name: 배포 상태 확인
+        run: |
+          bash scripts/deploy/api-server-ecs/wait-for-deployment.sh \
+            "${ECS_CLUSTER}" \
+            "${ECS_SERVICE}" \
+            "${TASK_DEF_ARN}" \
+            "${AWS_REGION}" \
+            60
+
+  deploy-summary:
+    name: 배포 요약
+    needs: [build, deploy]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: 배포 결과 출력
+        run: |
+          echo "## 배포 요약" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 리전별 배포 상태" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| 리전 | 상태 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+
+          # 각 리전의 배포 결과 확인
+          us_east_result="${{ needs.deploy.result }}"
+          eu_west_result="${{ needs.deploy.result }}"
+
+          # Matrix job의 결과를 개별적으로 확인하는 것은 GitHub Actions의 제한으로 인해
+          # deploy job의 전체 결과를 사용합니다
+          if [[ "$us_east_result" == "success" ]] && [[ "$eu_west_result" == "success" ]]; then
+            echo "| 미국 동부 (버지니아 북부) | ✅ 성공 |" >> $GITHUB_STEP_SUMMARY
+            echo "| 유럽 (아일랜드) | ✅ 성공 |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 미국 동부 (버지니아 북부) | ❌ 실패 또는 진행 중 |" >> $GITHUB_STEP_SUMMARY
+            echo "| 유럽 (아일랜드) | ❌ 실패 또는 진행 중 |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 상세 정보" >> $GITHUB_STEP_SUMMARY
+          echo "- 배포 환경: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'Production') || (github.ref == 'refs/heads/develop' && 'Staging') || 'Staging' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 커밋: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 브랜치: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY

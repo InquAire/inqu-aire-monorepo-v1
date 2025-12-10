@@ -1,0 +1,159 @@
+name: Deploy Admin Web
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'apps/admin-web/**'
+      - '.github/workflows/deploy-admin-web.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment target environment'
+        required: false
+        type: choice
+        default: Staging
+        options:
+          - Staging
+          - Production
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: admin-web-${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'Production') || (github.ref == 'refs/heads/develop' && 'Staging') }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'Production') || (github.ref == 'refs/heads/develop' && 'Staging') }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'Production') || (github.ref == 'refs/heads/develop' && 'Staging') }}
+    env:
+      DEPLOY_ENV: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production') || (github.ref == 'refs/heads/develop' && 'staging') }}
+      BUILD_DIR: apps/admin-web/dist
+      ADMIN_CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.ADMIN_CLOUDFRONT_DISTRIBUTION_ID }}
+      ADMIN_API_BASE_URL: ${{ secrets.API_BASE_URL }}
+      ADMIN_ASSET_BASE_URL: ${{ secrets.ADMIN_ASSET_BASE_URL }}
+      ADMIN_HOMEPAGE_URL: ${{ secrets.ADMIN_HOMEPAGE_URL }}
+    steps:
+      - name: Validate deployment target
+        run: |
+          if [ -z "${DEPLOY_ENV}" ]; then
+            echo 'Deployment environment not resolved' >&2
+            exit 1
+          fi
+          # 대소문자 무시하고 비교
+          deploy_env_lower=$(echo "${DEPLOY_ENV}" | tr '[:upper:]' '[:lower:]')
+          if [ "${deploy_env_lower}" != "staging" ] && [ "${deploy_env_lower}" != "production" ]; then
+            echo "Unsupported environment: ${DEPLOY_ENV}" >&2
+            exit 1
+          fi
+          echo "Deploying to ${DEPLOY_ENV}"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve pnpm version
+        id: pnpm-version
+        run: |
+          node -e "const fs = require('fs'); const spec = require('./package.json').packageManager || ''; const version = spec.split('@')[1]?.split('+')[0]; if (!version) { throw new Error('Unable to resolve pnpm version from packageManager'); } fs.appendFileSync(process.env.GITHUB_OUTPUT, 'version=' + version + '\\n');"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ steps.pnpm-version.outputs.version }}
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve frontend runtime config
+        id: resolve-env
+        run: |
+          if [ -z "${ADMIN_API_BASE_URL}" ]; then
+            echo "ADMIN_API_BASE_URL secret is not configured for ${DEPLOY_ENV}" >&2
+            exit 1
+          fi
+
+          if [ -z "${ADMIN_ASSET_BASE_URL}" ]; then
+            echo "ADMIN_ASSET_BASE_URL secret is not configured for ${DEPLOY_ENV}" >&2
+            exit 1
+          fi
+
+          if [ -z "${ADMIN_HOMEPAGE_URL}" ]; then
+            echo "ADMIN_HOMEPAGE_URL secret is not configured for ${DEPLOY_ENV}" >&2
+            exit 1
+          fi
+
+          {
+            echo "api_base_url=${ADMIN_API_BASE_URL}"
+            echo "asset_base_url=${ADMIN_ASSET_BASE_URL}"
+            echo "homepage_url=${ADMIN_HOMEPAGE_URL}"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "VITE_API_BASE_URL=${ADMIN_API_BASE_URL}" >> "$GITHUB_ENV"
+          echo "VITE_ASSET_BASE_URL=${ADMIN_ASSET_BASE_URL}" >> "$GITHUB_ENV"
+          echo "VITE_HOMEPAGE_URL=${ADMIN_HOMEPAGE_URL}" >> "$GITHUB_ENV"
+
+      - name: Build admin web
+        run: pnpm --filter @ai-next/admin-web... run build
+
+      - name: Resolve AWS configuration
+        id: resolve-aws
+        run: |
+          if [ -z "${AWS_REGION_SECRET}" ]; then
+            echo 'AWS region secret (ADMIN_AWS_REGION) not configured for this environment.' >&2
+            exit 1
+          fi
+
+          if [ -z "${AWS_ROLE_ARN_SECRET}" ]; then
+            echo 'AWS role secret (ADMIN_AWS_ROLE_ARN) not configured for this environment.' >&2
+            exit 1
+          fi
+
+          {
+            echo "region=${AWS_REGION_SECRET}"
+            echo "role=${AWS_ROLE_ARN_SECRET}"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "ADMIN_AWS_REGION=${AWS_REGION_SECRET}"
+            echo "ADMIN_AWS_ROLE_ARN=${AWS_ROLE_ARN_SECRET}"
+          } >> "$GITHUB_ENV"
+        env:
+          AWS_REGION_SECRET: ${{ secrets.ADMIN_AWS_REGION }}
+          AWS_ROLE_ARN_SECRET: ${{ secrets.ADMIN_AWS_ROLE_ARN }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ steps.resolve-aws.outputs.role }}
+          aws-region: ${{ steps.resolve-aws.outputs.region }}
+
+      - name: Upload static assets to S3
+        run: |
+          aws s3 sync "$BUILD_DIR" "s3://${{ secrets.ADMIN_S3_BUCKET }}" --delete \
+            --exclude "*.html" \
+            --cache-control "max-age=31536000,public"
+          aws s3 sync "$BUILD_DIR" "s3://${{ secrets.ADMIN_S3_BUCKET }}" --delete \
+            --exclude "*" \
+            --include "*.html" \
+            --cache-control "no-store"
+
+      - name: Invalidate CloudFront cache
+        if: ${{ env.ADMIN_CLOUDFRONT_DISTRIBUTION_ID != '' }}
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ env.ADMIN_CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --paths '/*'

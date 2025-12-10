@@ -1,0 +1,90 @@
+# ──────────────────────────────
+# Node / PNPM
+# ──────────────────────────────
+node_modules/
+.pnpm-store/
+.pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+node-compile-cache/
+
+# ──────────────────────────────
+# Build / Dist
+# ──────────────────────────────
+dist/
+build/
+.cache/
+.ncc/
+.next/
+out/
+coverage/
+
+# ──────────────────────────────
+# Logs
+# ──────────────────────────────
+logs/
+*.log
+*.log.*
+/*.pid
+/*.seed
+*.pid.lock
+
+# ──────────────────────────────
+# Prisma
+# ──────────────────────────────
+**/prisma/generated/
+packages/prisma/generated/
+*.db
+*.sqlite
+*.sqlite-journal
+
+# ──────────────────────────────
+# IDE / Editor
+# ──────────────────────────────
+.idea/
+*.swp
+*.swo
+*.iml
+
+# ──────────────────────────────
+# OS / Misc
+# ──────────────────────────────
+.DS_Store
+Thumbs.db
+*.tgz
+*.bak
+*.tmp
+*.temp
+*.orig
+
+# ──────────────────────────────
+# Swagger / OpenAPI
+# ──────────────────────────────
+# apps/api/openapi.yaml
+apps/api/openapi.json
+packages/sdk/src/openapi/
+packages/shared/src/openapi/types.ts
+
+# ──────────────────────────────
+# Docker
+# ──────────────────────────────
+.docker/
+docker-data/
+*.tar
+output/
+
+# TODO: 추후에 주석 해제
+apps/api-server/cert/
+apps/api-server/envs/
+
+# ──────────────────────────────
+# Environment
+# ──────────────────────────────
+.env
+.env*.local
+.env.test
+.env.development.local
+.env.production.local
+scripts/deploy/api-server-ecs/local/.env

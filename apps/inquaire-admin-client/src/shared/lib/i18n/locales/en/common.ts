@@ -1,0 +1,266 @@
+export default {
+  // Common
+  common: {
+    save: 'Save',
+    cancel: 'Cancel',
+    delete: 'Delete',
+    edit: 'Edit',
+    add: 'Add',
+    create: 'Create',
+    update: 'Update',
+    search: 'Search',
+    filter: 'Filter',
+    export: 'Export',
+    import: 'Import',
+    refresh: 'Refresh',
+    close: 'Close',
+    confirm: 'Confirm',
+    back: 'Back',
+    next: 'Next',
+    previous: 'Previous',
+    loading: 'Loading...',
+    noData: 'No data available',
+    error: 'An error occurred',
+    success: 'Success',
+    warning: 'Warning',
+    info: 'Information',
+    yes: 'Yes',
+    no: 'No',
+    all: 'All',
+    active: 'Active',
+    inactive: 'Inactive',
+    total: 'Total',
+    actions: 'Actions',
+    status: 'Status',
+    date: 'Date',
+    createdAt: 'Created At',
+    updatedAt: 'Updated At',
+    description: 'Description',
+    name: 'Name',
+    email: 'Email',
+    phone: 'Phone',
+    address: 'Address',
+    settings: 'Settings',
+    logout: 'Logout',
+    profile: 'Profile',
+  },
+
+  // Navigation
+  nav: {
+    dashboard: 'Dashboard',
+    businesses: 'Businesses',
+    inquiries: 'Inquiries',
+    customers: 'Customers',
+    channels: 'Channels',
+    users: 'Users',
+    subscription: 'Subscription',
+    replyTemplates: 'Reply Templates',
+    settings: 'Settings',
+    errorLogs: 'Error Logs',
+    webhookEvents: 'Webhook Events',
+  },
+
+  // Dashboard
+  dashboard: {
+    title: 'Dashboard',
+    overview: 'Overview',
+    statistics: 'Statistics',
+    recentInquiries: 'Recent Inquiries',
+    totalInquiries: 'Total Inquiries',
+    pendingInquiries: 'Pending Inquiries',
+    resolvedInquiries: 'Resolved Inquiries',
+    averageResponseTime: 'Avg. Response Time',
+    customerSatisfaction: 'Customer Satisfaction',
+    inquiryTrend: 'Inquiry Trend',
+    sentimentAnalysis: 'Sentiment Analysis',
+    platformDistribution: 'Platform Distribution',
+    responseTimeTrend: 'Response Time Trend',
+  },
+
+  // Business
+  business: {
+    title: 'Business Management',
+    addBusiness: 'Add Business',
+    editBusiness: 'Edit Business',
+    businessName: 'Business Name',
+    businessType: 'Industry',
+    owner: 'Owner',
+    contactInfo: 'Contact Info',
+    totalBusinesses: 'Total Businesses',
+    activeBusinesses: 'Active Businesses',
+    newThisMonth: 'New This Month',
+    industryCount: 'Industries',
+  },
+
+  // Inquiry
+  inquiry: {
+    title: 'Inquiry Management',
+    addInquiry: 'Add Inquiry',
+    editInquiry: 'Edit Inquiry',
+    inquiryId: 'Inquiry ID',
+    customer: 'Customer',
+    channel: 'Channel',
+    content: 'Content',
+    reply: 'Reply',
+    sentiment: 'Sentiment',
+    category: 'Category',
+    pending: 'Pending',
+    processing: 'Processing',
+    resolved: 'Resolved',
+    closed: 'Closed',
+    positive: 'Positive',
+    neutral: 'Neutral',
+    negative: 'Negative',
+    analyzeWithAI: 'Analyze with AI',
+  },
+
+  // Customer
+  customer: {
+    title: 'Customer Management',
+    addCustomer: 'Add Customer',
+    editCustomer: 'Edit Customer',
+    customerId: 'Customer ID',
+    customerName: 'Customer Name',
+    platform: 'Platform',
+    totalCustomers: 'Total Customers',
+    newCustomers: 'New Customers',
+    activeCustomers: 'Active Customers',
+    inquiryCount: 'Inquiries',
+    lastInquiry: 'Last Inquiry',
+    mergeCustomers: 'Merge Customers',
+  },
+
+  // Channel
+  channel: {
+    title: 'Channel Management',
+    addChannel: 'Add Channel',
+    editChannel: 'Edit Channel',
+    channelName: 'Channel Name',
+    channelType: 'Channel Type',
+    webhookUrl: 'Webhook URL',
+    autoReply: 'Auto Reply',
+    regenerateWebhook: 'Regenerate Webhook',
+    toggleActive: 'Toggle Active',
+    toggleAutoReply: 'Toggle Auto Reply',
+  },
+
+  // User
+  user: {
+    title: 'User Management',
+    addUser: 'Add User',
+    editUser: 'Edit User',
+    userName: 'Username',
+    role: 'Role',
+    changeRole: 'Change Role',
+    admin: 'Admin',
+    superAdmin: 'Super Admin',
+    manager: 'Manager',
+    staff: 'Staff',
+  },
+
+  // Subscription
+  subscription: {
+    title: 'Subscription Management',
+    currentPlan: 'Current Plan',
+    changePlan: 'Change Plan',
+    billingHistory: 'Billing History',
+    usage: 'Usage',
+    freePlan: 'Free',
+    basicPlan: 'Basic',
+    proPlan: 'Pro',
+    enterprisePlan: 'Enterprise',
+    monthlyInquiries: 'Monthly Inquiries',
+    channels: 'Channels',
+    users: 'Users',
+  },
+
+  // Template
+  template: {
+    title: 'Reply Templates',
+    addTemplate: 'Add Template',
+    editTemplate: 'Edit Template',
+    templateName: 'Template Name',
+    templateContent: 'Template Content',
+    variables: 'Variables',
+    usageCount: 'Usage Count',
+  },
+
+  // Settings
+  settings: {
+    title: 'Settings',
+    profile: 'Profile Settings',
+    security: 'Security Settings',
+    notifications: 'Notification Settings',
+    language: 'Language Settings',
+    theme: 'Theme Settings',
+    changePassword: 'Change Password',
+    currentPassword: 'Current Password',
+    newPassword: 'New Password',
+    confirmPassword: 'Confirm Password',
+  },
+
+  // Error Log
+  errorLog: {
+    title: 'Error Logs',
+    errorType: 'Error Type',
+    errorMessage: 'Error Message',
+    stackTrace: 'Stack Trace',
+    resolve: 'Resolve',
+    resolved: 'Resolved',
+    unresolved: 'Unresolved',
+  },
+
+  // Webhook Event
+  webhookEvent: {
+    title: 'Webhook Events',
+    eventType: 'Event Type',
+    payload: 'Payload',
+    retry: 'Retry',
+    success: 'Success',
+    failed: 'Failed',
+  },
+
+  // Theme
+  theme: {
+    light: 'Light Mode',
+    dark: 'Dark Mode',
+    system: 'System',
+  },
+
+  // Language
+  language: {
+    korean: '한국어',
+    english: 'English',
+    japanese: '日本語',
+  },
+
+  // Messages
+  message: {
+    confirmDelete: 'Are you sure you want to delete?',
+    deleteSuccess: 'Successfully deleted',
+    saveSuccess: 'Successfully saved',
+    updateSuccess: 'Successfully updated',
+    createSuccess: 'Successfully created',
+    errorOccurred: 'An error occurred',
+    invalidInput: 'Invalid input',
+    requiredField: 'This field is required',
+    sessionExpired: 'Session expired',
+    loginRequired: 'Login required',
+    permissionDenied: 'Permission denied',
+  },
+
+  // Datetime
+  datetime: {
+    today: 'Today',
+    yesterday: 'Yesterday',
+    thisWeek: 'This Week',
+    thisMonth: 'This Month',
+    lastWeek: 'Last Week',
+    lastMonth: 'Last Month',
+    custom: 'Custom',
+    startDate: 'Start Date',
+    endDate: 'End Date',
+    selectDate: 'Select Date',
+    selectDateRange: 'Select Date Range',
+  },
+};

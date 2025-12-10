@@ -1,0 +1,641 @@
+// AI 상담 매니저 (AI Inquiry Manager)
+// Prisma Schema for AI-based Auto Inquiry Management SaaS
+// Production-ready schema with proper indexing and constraints
+
+generator client {
+  provider = "prisma-client"
+  output   = "./generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// 사용자 및 인증 (User & Authentication)
+// ============================================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password_hash String
+  name          String
+  avatar_url    String? // 프로필 이미지
+  role          UserRole  @default(USER) // 시스템 레벨 역할
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  last_login_at DateTime?
+  deleted_at    DateTime?
+
+  // Relations
+  organizationMemberships OrganizationMember[]
+  refreshTokens           RefreshToken[]
+  errorLogs               ErrorLog[]
+  sentInvitations         OrganizationInvitation[] @relation("InvitedBy")
+
+  @@index([email])
+  @@index([created_at])
+  @@index([last_login_at])
+  @@index([deleted_at]) // 소프트 삭제 필터링 최적화
+  @@map("users")
+}
+
+model RefreshToken {
+  id          String    @id @default(uuid())
+  user_id     String
+  token_hash  String    @unique // bcrypt hash (보안용, 느림)
+  lookup_hash String    @unique // SHA-256 hash (빠른 조회용)
+  expires_at  DateTime
+  revoked_at  DateTime?
+  created_at  DateTime  @default(now())
+
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([lookup_hash]) // 빠른 조회를 위한 인덱스
+  @@index([user_id, expires_at]) // 만료되지 않은 토큰 조회 최적화
+  @@index([expires_at]) // 만료된 토큰 정리 최적화
+  @@map("refresh_tokens")
+}
+
+// ============================================
+// 조직 (Organization)
+// ============================================
+
+model Organization {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique // URL-friendly identifier
+  logo_url    String?
+  description String?
+  settings    Json? // 조직 설정 (JSON)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  deleted_at  DateTime?
+
+  // Relations
+  members      OrganizationMember[]
+  businesses   Business[]
+  subscription OrganizationSubscription?
+  invitations  OrganizationInvitation[]
+
+  @@index([slug])
+  @@index([deleted_at])
+  @@map("organizations")
+}
+
+// ============================================
+// 조직 멤버 (Organization Member)
+// ============================================
+
+model OrganizationMember {
+  id              String           @id @default(uuid())
+  organization_id String
+  user_id         String
+  role            OrganizationRole @default(MEMBER)
+  permissions     String[] // 추가 권한 목록
+  invited_by      String? // 초대한 사용자 ID
+  joined_at       DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+  deleted_at      DateTime?
+
+  // Relations
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([organization_id, user_id])
+  @@index([organization_id])
+  @@index([user_id])
+  @@index([role])
+  @@index([deleted_at])
+  @@map("organization_members")
+}
+
+// ============================================
+// 조직 초대 (Organization Invitation)
+// ============================================
+
+model OrganizationInvitation {
+  id              String           @id @default(uuid())
+  organization_id String
+  email           String
+  role            OrganizationRole @default(MEMBER)
+  token           String           @unique
+  invited_by      String
+  expires_at      DateTime
+  accepted_at     DateTime?
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  inviter      User         @relation("InvitedBy", fields: [invited_by], references: [id], onDelete: Cascade)
+
+  @@unique([organization_id, email])
+  @@index([token])
+  @@index([email])
+  @@index([expires_at])
+  @@index([invited_by])
+  @@map("organization_invitations")
+}
+
+// ============================================
+// 조직 구독 (Organization Subscription)
+// ============================================
+
+model OrganizationSubscription {
+  id                  String             @id @default(uuid())
+  organization_id     String             @unique
+  plan                SubscriptionPlan
+  status              SubscriptionStatus @default(TRIAL)
+  monthly_limit       Int // 월 문의 제한
+  current_usage       Int                @default(0)
+  max_businesses      Int                @default(1) // 최대 사업체 수
+  max_members         Int                @default(5) // 최대 멤버 수
+  billing_cycle_start DateTime
+  billing_cycle_end   DateTime
+  trial_ends_at       DateTime?
+  canceled_at         DateTime?
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt
+
+  // Relations
+  organization Organization          @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  payments     OrganizationPayment[]
+
+  @@index([organization_id])
+  @@index([status])
+  @@index([billing_cycle_end])
+  @@map("organization_subscriptions")
+}
+
+// ============================================
+// 조직 결제 (Organization Payment)
+// ============================================
+
+model OrganizationPayment {
+  id              String        @id @default(uuid())
+  organization_id String
+  subscription_id String?
+  amount          Int
+  currency        String        @default("KRW")
+  status          PaymentStatus @default(PENDING)
+  payment_method  String?
+  payment_key     String?       @unique
+  paid_at         DateTime?
+  failed_at       DateTime?
+  failure_reason  String?       @db.Text
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+
+  // Relations
+  subscription OrganizationSubscription? @relation(fields: [subscription_id], references: [id])
+
+  @@index([organization_id])
+  @@index([subscription_id])
+  @@index([status])
+  @@map("organization_payments")
+}
+
+// ============================================
+// 사업체 (Business)
+// ============================================
+
+model Business {
+  id              String       @id @default(uuid())
+  organization_id String // 소속 조직 ID (필수)
+  name            String
+  industry_type   IndustryType
+  address         String?
+  phone           String?
+  website         String?
+  settings        Json? // 사업체별 설정 (영업시간, 자동응답 등)
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+  deleted_at      DateTime?
+
+  // Relations
+  organization Organization    @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  channels     Channel[]
+  customers    Customer[]
+  inquiries    Inquiry[]
+  templates    ReplyTemplate[]
+
+  @@index([organization_id])
+  @@index([industry_type])
+  @@index([created_at])
+  @@index([deleted_at])
+  @@index([organization_id, deleted_at]) // 조직별 활성 사업체 조회 최적화
+  @@map("businesses")
+}
+
+// ============================================
+// 채널 (Channel - Kakao/LINE)
+// ============================================
+
+model Channel {
+  id                  String       @id @default(uuid())
+  business_id         String
+  platform            PlatformType
+  platform_channel_id String // channel_id 대신 platform_channel_id (코드와 일치)
+  name                String? // channel_name 대신 name (코드와 일치)
+  access_token        String?      @db.Text // 암호화 저장 권장
+  refresh_token       String?      @db.Text
+  webhook_url         String?      @unique // 채널 생성 후 설정되므로 nullable
+  webhook_secret      String? // Webhook 검증용
+  auto_reply_enabled  Boolean      @default(true) // 누락된 필드 추가
+  is_active           Boolean      @default(true)
+  token_expires_at    DateTime?
+  last_synced_at      DateTime?
+  created_at          DateTime     @default(now())
+  updated_at          DateTime     @updatedAt
+  deleted_at          DateTime?
+
+  // Relations
+  business  Business  @relation(fields: [business_id], references: [id], onDelete: Cascade)
+  inquiries Inquiry[]
+
+  @@unique([business_id, platform, platform_channel_id])
+  @@index([business_id])
+  @@index([platform])
+  @@index([is_active])
+  @@index([webhook_url])
+  @@index([deleted_at]) // 소프트 삭제 필터링 최적화
+  @@index([business_id, deleted_at]) // 사업체별 활성 채널 조회 최적화
+  @@index([business_id, platform, deleted_at]) // 플랫폼별 채널 조회 최적화
+  @@map("channels")
+}
+
+// ============================================
+// 고객 (Customer)
+// ============================================
+
+model Customer {
+  id               String       @id @default(uuid())
+  business_id      String
+  platform_user_id String // Kakao/LINE의 사용자 ID
+  platform         PlatformType
+  name             String?
+  phone            String?
+  email            String?
+  tags             String[] // 고객 태그 배열
+  metadata         Json? // 추가 정보 (JSON)
+  first_contact    DateTime? // first_inquiry_at 대신 first_contact (코드와 일치)
+  last_contact     DateTime? // last_inquiry_at 대신 last_contact (코드와 일치)
+  inquiry_count    Int          @default(0)
+  created_at       DateTime     @default(now())
+  updated_at       DateTime     @updatedAt
+  deleted_at       DateTime?
+
+  // Relations
+  business  Business  @relation(fields: [business_id], references: [id], onDelete: Cascade)
+  inquiries Inquiry[]
+
+  @@unique([business_id, platform, platform_user_id])
+  @@index([business_id])
+  @@index([platform_user_id])
+  @@index([phone])
+  @@index([email])
+  @@index([last_contact])
+  @@index([first_contact])
+  @@index([created_at])
+  @@index([deleted_at]) // 소프트 삭제 필터링 최적화
+  @@index([business_id, deleted_at]) // 사업체별 활성 고객 조회 최적화
+  @@index([business_id, platform, deleted_at]) // 플랫폼별 고객 조회 최적화
+  @@index([business_id, last_contact]) // 최근 연락 고객 조회 최적화
+  @@map("customers")
+}
+
+// ============================================
+// 문의 (Inquiry)
+// ============================================
+
+model Inquiry {
+  id                  String        @id @default(uuid())
+  business_id         String
+  channel_id          String
+  customer_id         String
+  platform_message_id String // 플랫폼의 메시지 ID
+  message_text        String        @db.Text // 원본 메시지
+  type                String? // 문의 유형 (예약, 비용, 위치 등)
+  summary             String?       @db.Text // AI 생성 요약
+  extracted_info      Json? // AI 추출 정보 (JSON)
+  reply_text          String?       @db.Text // 자동 답변
+  status              InquiryStatus @default(NEW)
+  sentiment           String? // 감정 분석 (POSITIVE/NEUTRAL/NEGATIVE)
+  urgency             String? // 긴급도 (HIGH/MEDIUM/LOW)
+  ai_confidence       Float? // AI 분석 신뢰도 (0-1)
+  ai_model            String? // 사용된 AI 모델
+  ai_processing_time  Int? // AI 처리 시간 (ms)
+  notes               String?       @db.Text // 관리자 메모
+  received_at         DateTime      @default(now()) // 누락된 필드 추가 - 메시지 수신 시간
+  analyzed_at         DateTime? // 누락된 필드 추가 - AI 분석 완료 시간
+  replied_at          DateTime?
+  completed_at        DateTime?
+  created_at          DateTime      @default(now())
+  updated_at          DateTime      @updatedAt
+  deleted_at          DateTime?
+
+  // Relations
+  business Business       @relation(fields: [business_id], references: [id], onDelete: Cascade)
+  channel  Channel        @relation(fields: [channel_id], references: [id], onDelete: Cascade)
+  customer Customer       @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  replies  InquiryReply[]
+
+  @@index([business_id])
+  @@index([channel_id])
+  @@index([customer_id])
+  @@index([status])
+  @@index([type])
+  @@index([sentiment])
+  @@index([urgency])
+  @@index([received_at])
+  @@index([analyzed_at])
+  @@index([created_at])
+  @@index([deleted_at]) // 소프트 삭제 필터링 최적화
+  @@index([platform_message_id]) // 중복 메시지 방지
+  @@index([business_id, status, deleted_at]) // 사업체별 상태별 문의 조회 최적화
+  @@index([business_id, type, deleted_at]) // 사업체별 유형별 문의 조회 최적화
+  @@index([business_id, received_at, deleted_at]) // 사업체별 시간순 문의 조회 최적화
+  @@index([customer_id, received_at, deleted_at]) // 고객별 시간순 문의 조회 최적화
+  @@index([channel_id, received_at, deleted_at]) // 채널별 시간순 문의 조회 최적화
+  @@index([business_id, sentiment, deleted_at]) // 감정별 통계 조회 최적화
+  @@index([business_id, urgency, deleted_at]) // 긴급도별 통계 조회 최적화
+  @@map("inquiries")
+}
+
+// ============================================
+// 문의 답변 (Inquiry Reply - 대화 이력)
+// ============================================
+
+model InquiryReply {
+  id            String     @id @default(uuid())
+  inquiry_id    String
+  message_text  String     @db.Text
+  sender_type   SenderType // AI 또는 HUMAN
+  sender_id     String? // 관리자 ID (수동 답변 시)
+  is_sent       Boolean    @default(false)
+  sent_at       DateTime?
+  failed_reason String?    @db.Text
+  retry_count   Int        @default(0)
+  created_at    DateTime   @default(now())
+
+  // Relations
+  inquiry Inquiry @relation(fields: [inquiry_id], references: [id], onDelete: Cascade)
+
+  @@index([inquiry_id])
+  @@index([created_at])
+  @@index([is_sent])
+  @@index([inquiry_id, created_at]) // 문의별 시간순 답변 조회 최적화
+  @@index([sender_type])
+  @@map("inquiry_replies")
+}
+
+// ============================================
+// 답변 템플릿 (Reply Template)
+// ============================================
+
+model ReplyTemplate {
+  id          String    @id @default(uuid())
+  business_id String
+  name        String // 템플릿 이름
+  type        String? // 문의 유형
+  content     String    @db.Text // 템플릿 내용
+  variables   String[] // 사용 가능한 변수 목록
+  is_active   Boolean   @default(true)
+  usage_count Int       @default(0)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  deleted_at  DateTime?
+
+  // Relations
+  business Business @relation(fields: [business_id], references: [id], onDelete: Cascade)
+
+  @@index([business_id])
+  @@index([type])
+  @@index([is_active])
+  @@index([deleted_at])
+  @@index([business_id, type, is_active, deleted_at]) // 활성 템플릿 조회 최적화
+  @@map("reply_templates")
+}
+
+// ============================================
+// 업종별 설정 (Industry Config)
+// ============================================
+
+model IndustryConfig {
+  id                String       @id @default(uuid())
+  industry          IndustryType @unique
+  display_name      String
+  inquiry_types     Json // 문의 유형 정의 (JSON)
+  system_prompt     String       @db.Text // AI System Prompt
+  extraction_schema Json // 정보 추출 스키마 (JSON)
+  default_templates Json? // 기본 템플릿
+  created_at        DateTime     @default(now())
+  updated_at        DateTime     @updatedAt
+
+  @@index([industry])
+  @@map("industry_configs")
+}
+
+// ============================================
+// 에러 로그 (Error Log)
+// ============================================
+
+model ErrorLog {
+  id            String    @id @default(uuid())
+  user_id       String?
+  error_type    String // webhook_error, ai_error, api_error 등
+  error_code    String?
+  error_message String    @db.Text
+  stack_trace   String?   @db.Text
+  context       Json? // 에러 발생 컨텍스트
+  resolved      Boolean   @default(false)
+  resolved_at   DateTime?
+  occurred_at   DateTime  @default(now())
+
+  // Relations
+  user User? @relation(fields: [user_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@index([error_type])
+  @@index([resolved])
+  @@index([occurred_at])
+  @@index([error_type, resolved, occurred_at]) // 미해결 에러 조회 최적화
+  @@map("error_logs")
+}
+
+// ============================================
+// 통계 (Statistics) - 집계 테이블
+// ============================================
+
+model DailyStats {
+  id                    String   @id @default(uuid())
+  business_id           String
+  date                  DateTime @db.Date
+  total_inquiries       Int      @default(0)
+  new_inquiries         Int      @default(0)
+  in_progress_inquiries Int      @default(0)
+  completed_inquiries   Int      @default(0)
+  on_hold_inquiries     Int      @default(0)
+  unique_customers      Int      @default(0)
+  avg_response_time     Float? // 평균 응답 시간 (초)
+  avg_ai_confidence     Float? // 평균 AI 신뢰도
+  inquiry_types         Json? // 유형별 개수 (JSON)
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  @@unique([business_id, date])
+  @@index([business_id])
+  @@index([date])
+  @@index([business_id, date]) // 사업체별 일별 통계 조회 최적화
+  @@map("daily_stats")
+}
+
+// ============================================
+// 구독 및 결제 (Subscription & Billing)
+// ============================================
+
+model Subscription {
+  id                  String             @id @default(uuid())
+  business_id         String             @unique
+  plan                SubscriptionPlan
+  status              SubscriptionStatus @default(TRIAL)
+  monthly_limit       Int // 월 문의 제한
+  current_usage       Int                @default(0)
+  billing_cycle_start DateTime
+  billing_cycle_end   DateTime
+  trial_ends_at       DateTime?
+  canceled_at         DateTime?
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt
+
+  @@index([business_id])
+  @@index([status])
+  @@index([billing_cycle_end])
+  @@index([status, billing_cycle_end]) // 만료 예정 구독 조회 최적화
+  @@map("subscriptions")
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  business_id     String
+  subscription_id String?
+  amount          Int // 금액 (원)
+  currency        String        @default("KRW")
+  status          PaymentStatus @default(PENDING)
+  payment_method  String? // 결제 수단
+  payment_key     String?       @unique // PG사 결제 키
+  paid_at         DateTime?
+  failed_at       DateTime?
+  failure_reason  String?       @db.Text
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+
+  @@index([business_id])
+  @@index([subscription_id])
+  @@index([status])
+  @@index([paid_at])
+  @@index([payment_key])
+  @@index([business_id, status, created_at]) // 사업체별 결제 이력 조회 최적화
+  @@map("payments")
+}
+
+// ============================================
+// Webhook 이벤트 로그 (Webhook Event Log)
+// ============================================
+
+model WebhookEvent {
+  id            String    @id @default(uuid())
+  channel_id    String?
+  event_type    String // message_received, delivery_status 등
+  payload       Json // 원본 Webhook 페이로드
+  processed     Boolean   @default(false)
+  processed_at  DateTime?
+  error_message String?   @db.Text
+  retry_count   Int       @default(0)
+  received_at   DateTime  @default(now())
+
+  @@index([channel_id])
+  @@index([event_type])
+  @@index([processed])
+  @@index([received_at])
+  @@index([processed, received_at]) // 미처리 이벤트 조회 최적화
+  @@index([channel_id, received_at]) // 채널별 이벤트 조회 최적화
+  @@index([retry_count, processed]) // 재시도 필요 이벤트 조회 최적화
+  @@map("webhook_events")
+}
+
+// ============================================
+// Enums
+// ============================================
+
+enum UserRole {
+  USER // 일반 사용자
+  ADMIN // 관리자
+  SUPER_ADMIN // 슈퍼 관리자
+}
+
+enum OrganizationRole {
+  OWNER // 소유자 (모든 권한, 조직 삭제 가능)
+  ADMIN // 관리자 (멤버 관리, 설정 변경)
+  MANAGER // 매니저 (사업체 관리, 문의 처리)
+  MEMBER // 멤버 (문의 조회/처리)
+  VIEWER // 뷰어 (읽기 전용)
+}
+
+enum IndustryType {
+  HOSPITAL // 병원
+  DENTAL // 치과
+  DERMATOLOGY // 피부과
+  PLASTIC_SURGERY // 성형외과
+  REAL_ESTATE // 부동산
+  BEAUTY_SALON // 미용실
+  ACADEMY // 학원
+  LAW_FIRM // 법률 상담소
+  OTHER // 기타
+}
+
+enum PlatformType {
+  KAKAO // 카카오톡
+  LINE // LINE
+  INSTAGRAM // 인스타그램 (향후)
+  NAVER_TALK // 네이버 톡톡 (향후)
+  WEB_CHAT // 웹 채팅 위젯 (향후)
+}
+
+enum InquiryStatus {
+  NEW // 신규
+  IN_PROGRESS // 진행중
+  COMPLETED // 완료
+  ON_HOLD // 보류
+}
+
+enum SenderType {
+  AI // AI 자동 답변
+  HUMAN // 관리자 수동 답변
+  SYSTEM // 시스템 메시지
+}
+
+enum SubscriptionPlan {
+  TRIAL // 무료 체험
+  BASIC // 기본 (월 1,000건)
+  PRO // 프로 (월 5,000건)
+  ENTERPRISE // 엔터프라이즈 (무제한)
+}
+
+enum SubscriptionStatus {
+  TRIAL // 체험 중
+  ACTIVE // 활성
+  PAST_DUE // 결제 지연
+  CANCELED // 취소됨
+  EXPIRED // 만료됨
+}
+
+enum PaymentStatus {
+  PENDING // 대기
+  COMPLETED // 완료
+  FAILED // 실패
+  REFUNDED // 환불
+}

@@ -1,0 +1,266 @@
+export default {
+  // 공통
+  common: {
+    save: '저장',
+    cancel: '취소',
+    delete: '삭제',
+    edit: '편집',
+    add: '추가',
+    create: '생성',
+    update: '업데이트',
+    search: '검색',
+    filter: '필터',
+    export: '내보내기',
+    import: '가져오기',
+    refresh: '새로고침',
+    close: '닫기',
+    confirm: '확인',
+    back: '뒤로',
+    next: '다음',
+    previous: '이전',
+    loading: '로딩 중...',
+    noData: '데이터가 없습니다',
+    error: '오류가 발생했습니다',
+    success: '성공',
+    warning: '경고',
+    info: '정보',
+    yes: '예',
+    no: '아니오',
+    all: '전체',
+    active: '활성',
+    inactive: '비활성',
+    total: '전체',
+    actions: '작업',
+    status: '상태',
+    date: '날짜',
+    createdAt: '생성일',
+    updatedAt: '수정일',
+    description: '설명',
+    name: '이름',
+    email: '이메일',
+    phone: '전화번호',
+    address: '주소',
+    settings: '설정',
+    logout: '로그아웃',
+    profile: '프로필',
+  },
+
+  // 네비게이션
+  nav: {
+    dashboard: '대시보드',
+    businesses: '사업체 관리',
+    inquiries: '문의 관리',
+    customers: '고객 관리',
+    channels: '채널 관리',
+    users: '사용자 관리',
+    subscription: '구독 관리',
+    replyTemplates: '답변 템플릿',
+    settings: '설정',
+    errorLogs: '에러 로그',
+    webhookEvents: '웹훅 이벤트',
+  },
+
+  // 대시보드
+  dashboard: {
+    title: '대시보드',
+    overview: '개요',
+    statistics: '통계',
+    recentInquiries: '최근 문의',
+    totalInquiries: '총 문의 수',
+    pendingInquiries: '대기 중인 문의',
+    resolvedInquiries: '해결된 문의',
+    averageResponseTime: '평균 응답 시간',
+    customerSatisfaction: '고객 만족도',
+    inquiryTrend: '문의 추이',
+    sentimentAnalysis: '감정 분석',
+    platformDistribution: '플랫폼별 분포',
+    responseTimeTrend: '응답 시간 추이',
+  },
+
+  // 사업체
+  business: {
+    title: '사업체 관리',
+    addBusiness: '사업체 추가',
+    editBusiness: '사업체 편집',
+    businessName: '사업체명',
+    businessType: '업종',
+    owner: '소유자',
+    contactInfo: '연락처 정보',
+    totalBusinesses: '총 사업체',
+    activeBusinesses: '활성 사업체',
+    newThisMonth: '이번 달 신규',
+    industryCount: '업종 수',
+  },
+
+  // 문의
+  inquiry: {
+    title: '문의 관리',
+    addInquiry: '문의 추가',
+    editInquiry: '문의 편집',
+    inquiryId: '문의 ID',
+    customer: '고객',
+    channel: '채널',
+    content: '내용',
+    reply: '답변',
+    sentiment: '감정',
+    category: '카테고리',
+    pending: '대기중',
+    processing: '처리중',
+    resolved: '해결됨',
+    closed: '종료됨',
+    positive: '긍정',
+    neutral: '중립',
+    negative: '부정',
+    analyzeWithAI: 'AI 분석',
+  },
+
+  // 고객
+  customer: {
+    title: '고객 관리',
+    addCustomer: '고객 추가',
+    editCustomer: '고객 편집',
+    customerId: '고객 ID',
+    customerName: '고객명',
+    platform: '플랫폼',
+    totalCustomers: '총 고객 수',
+    newCustomers: '신규 고객',
+    activeCustomers: '활성 고객',
+    inquiryCount: '문의 수',
+    lastInquiry: '마지막 문의',
+    mergeCustomers: '고객 병합',
+  },
+
+  // 채널
+  channel: {
+    title: '채널 관리',
+    addChannel: '채널 추가',
+    editChannel: '채널 편집',
+    channelName: '채널명',
+    channelType: '채널 타입',
+    webhookUrl: '웹훅 URL',
+    autoReply: '자동 응답',
+    regenerateWebhook: '웹훅 재생성',
+    toggleActive: '활성화/비활성화',
+    toggleAutoReply: '자동 응답 활성화/비활성화',
+  },
+
+  // 사용자
+  user: {
+    title: '사용자 관리',
+    addUser: '사용자 추가',
+    editUser: '사용자 편집',
+    userName: '사용자명',
+    role: '역할',
+    changeRole: '역할 변경',
+    admin: '관리자',
+    superAdmin: '최고 관리자',
+    manager: '매니저',
+    staff: '스태프',
+  },
+
+  // 구독
+  subscription: {
+    title: '구독 관리',
+    currentPlan: '현재 요금제',
+    changePlan: '요금제 변경',
+    billingHistory: '결제 내역',
+    usage: '사용량',
+    freePlan: '무료',
+    basicPlan: '베이직',
+    proPlan: '프로',
+    enterprisePlan: '엔터프라이즈',
+    monthlyInquiries: '월간 문의 수',
+    channels: '채널 수',
+    users: '사용자 수',
+  },
+
+  // 답변 템플릿
+  template: {
+    title: '답변 템플릿',
+    addTemplate: '템플릿 추가',
+    editTemplate: '템플릿 편집',
+    templateName: '템플릿명',
+    templateContent: '템플릿 내용',
+    variables: '변수',
+    usageCount: '사용 횟수',
+  },
+
+  // 설정
+  settings: {
+    title: '설정',
+    profile: '프로필 설정',
+    security: '보안 설정',
+    notifications: '알림 설정',
+    language: '언어 설정',
+    theme: '테마 설정',
+    changePassword: '비밀번호 변경',
+    currentPassword: '현재 비밀번호',
+    newPassword: '새 비밀번호',
+    confirmPassword: '비밀번호 확인',
+  },
+
+  // 에러 로그
+  errorLog: {
+    title: '에러 로그',
+    errorType: '에러 타입',
+    errorMessage: '에러 메시지',
+    stackTrace: '스택 트레이스',
+    resolve: '해결',
+    resolved: '해결됨',
+    unresolved: '미해결',
+  },
+
+  // 웹훅 이벤트
+  webhookEvent: {
+    title: '웹훅 이벤트',
+    eventType: '이벤트 타입',
+    payload: '페이로드',
+    retry: '재시도',
+    success: '성공',
+    failed: '실패',
+  },
+
+  // 테마
+  theme: {
+    light: '라이트 모드',
+    dark: '다크 모드',
+    system: '시스템 설정',
+  },
+
+  // 언어
+  language: {
+    korean: '한국어',
+    english: 'English',
+    japanese: '日本語',
+  },
+
+  // 메시지
+  message: {
+    confirmDelete: '정말 삭제하시겠습니까?',
+    deleteSuccess: '성공적으로 삭제되었습니다',
+    saveSuccess: '성공적으로 저장되었습니다',
+    updateSuccess: '성공적으로 업데이트되었습니다',
+    createSuccess: '성공적으로 생성되었습니다',
+    errorOccurred: '오류가 발생했습니다',
+    invalidInput: '입력값이 올바르지 않습니다',
+    requiredField: '필수 입력 항목입니다',
+    sessionExpired: '세션이 만료되었습니다',
+    loginRequired: '로그인이 필요합니다',
+    permissionDenied: '권한이 없습니다',
+  },
+
+  // 날짜/시간
+  datetime: {
+    today: '오늘',
+    yesterday: '어제',
+    thisWeek: '이번 주',
+    thisMonth: '이번 달',
+    lastWeek: '지난 주',
+    lastMonth: '지난 달',
+    custom: '사용자 지정',
+    startDate: '시작일',
+    endDate: '종료일',
+    selectDate: '날짜 선택',
+    selectDateRange: '기간 선택',
+  },
+};

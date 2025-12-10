@@ -1,0 +1,4587 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1": {
+      "get": {
+        "operationId": "AppController_getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Health check",
+        "tags": ["health"]
+      }
+    },
+    "/v1/health": {
+      "get": {
+        "operationId": "AppController_getDetailedHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Detailed health check",
+        "tags": ["health"]
+      }
+    },
+    "/api/v1/health/test-sentry": {
+      "get": {
+        "description": "Triggers different types of Sentry events for testing alert rules",
+        "operationId": "AppController_testSentry",
+        "parameters": [
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Type of Sentry event to trigger",
+            "schema": {
+              "enum": ["error", "warning", "performance", "breadcrumb"],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Test Sentry alerts (development only)",
+        "tags": ["health"]
+      }
+    },
+    "/v1/metrics": {
+      "get": {
+        "operationId": "PrometheusController_index",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Prometheus"]
+      }
+    },
+    "/api/v1/auth/signup": {
+      "post": {
+        "operationId": "AuthController_signup",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "회원가입",
+        "tags": ["auth"]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "로그인",
+        "tags": ["auth"]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Access Token 갱신",
+        "tags": ["auth"]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "로그아웃",
+        "tags": ["auth"]
+      }
+    },
+    "/api/v1/auth/profile": {
+      "get": {
+        "operationId": "AuthController_getProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "내 프로필 조회",
+        "tags": ["auth"]
+      },
+      "patch": {
+        "operationId": "AuthController_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "프로필 업데이트",
+        "tags": ["auth"]
+      }
+    },
+    "/api/v1/auth/change-password": {
+      "post": {
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "비밀번호 변경",
+        "tags": ["auth"]
+      }
+    },
+    "/api/v1/users": {
+      "post": {
+        "operationId": "UsersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "사용자 생성 (ADMIN 전용)",
+        "tags": ["users"]
+      },
+      "get": {
+        "operationId": "UsersController_findAll",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "검색 키워드 (이름, 이메일)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "description": "역할 필터",
+            "schema": {
+              "enum": ["USER", "ADMIN", "SUPER_ADMIN"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "include_deleted",
+            "required": false,
+            "in": "query",
+            "description": "삭제된 사용자 포함",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "description": "페이지 크기",
+            "schema": {
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": true,
+            "in": "query",
+            "description": "오프셋",
+            "schema": {
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "사용자 목록 조회 (ADMIN 전용)",
+        "tags": ["users"]
+      }
+    },
+    "/api/v1/users/stats": {
+      "get": {
+        "operationId": "UsersController_getStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "사용자 통계 조회 (ADMIN 전용)",
+        "tags": ["users"]
+      }
+    },
+    "/api/v1/users/{id}": {
+      "get": {
+        "operationId": "UsersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "사용자 상세 조회",
+        "tags": ["users"]
+      },
+      "patch": {
+        "operationId": "UsersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "사용자 업데이트 (ADMIN 전용)",
+        "tags": ["users"]
+      },
+      "delete": {
+        "operationId": "UsersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "사용자 삭제 (ADMIN 전용)",
+        "tags": ["users"]
+      }
+    },
+    "/api/v1/users/{id}/role": {
+      "patch": {
+        "operationId": "UsersController_updateRole",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "사용자 역할 변경 (SUPER_ADMIN 전용)",
+        "tags": ["users"]
+      }
+    },
+    "/api/v1/webhooks/kakao/{channelId}": {
+      "post": {
+        "operationId": "WebhooksController_handleKakaoWebhook",
+        "parameters": [
+          {
+            "name": "channelId",
+            "required": true,
+            "in": "path",
+            "description": "채널 ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KakaoWebhookDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Kakao Talk 웹훅 수신",
+        "tags": ["webhooks"]
+      }
+    },
+    "/api/v1/webhooks/line/{channelId}": {
+      "post": {
+        "operationId": "WebhooksController_handleLineWebhook",
+        "parameters": [
+          {
+            "name": "channelId",
+            "required": true,
+            "in": "path",
+            "description": "채널 ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-line-signature",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LineWebhookDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "LINE 웹훅 수신",
+        "tags": ["webhooks"]
+      }
+    },
+    "/api/v1/webhooks/naver-talk/{channelId}": {
+      "post": {
+        "operationId": "WebhooksController_handleNaverTalkWebhook",
+        "parameters": [
+          {
+            "name": "channelId",
+            "required": true,
+            "in": "path",
+            "description": "채널 ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-naver-signature",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NaverTalkTalkWebhookDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "네이버 톡톡 웹훅 수신",
+        "tags": ["webhooks"]
+      }
+    },
+    "/api/v1/webhooks/instagram/{channelId}": {
+      "get": {
+        "operationId": "WebhooksController_verifyInstagramWebhook",
+        "parameters": [
+          {
+            "name": "channelId",
+            "required": true,
+            "in": "path",
+            "description": "채널 ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hub.mode",
+            "required": true,
+            "in": "query",
+            "description": "구독 모드",
+            "schema": {
+              "example": "subscribe",
+              "type": "string"
+            }
+          },
+          {
+            "name": "hub.verify_token",
+            "required": true,
+            "in": "query",
+            "description": "검증 토큰",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hub.challenge",
+            "required": true,
+            "in": "query",
+            "description": "챌린지 문자열",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Instagram 웹훅 URL 검증",
+        "tags": ["webhooks"]
+      },
+      "post": {
+        "operationId": "WebhooksController_handleInstagramWebhook",
+        "parameters": [
+          {
+            "name": "channelId",
+            "required": true,
+            "in": "path",
+            "description": "채널 ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-hub-signature-256",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InstagramWebhookDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Instagram 웹훅 수신",
+        "tags": ["webhooks"]
+      }
+    },
+    "/api/v1/ai/analyze": {
+      "post": {
+        "operationId": "AiController_analyzeInquiry",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyzeInquiryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "문의 메시지 AI 분석",
+        "tags": ["ai"]
+      }
+    },
+    "/api/v1/ai/generate-reply": {
+      "post": {
+        "operationId": "AiController_generateReply",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "AI 자동 답변 생성",
+        "tags": ["ai"]
+      }
+    },
+    "/api/v1/ai/classify": {
+      "post": {
+        "operationId": "AiController_classifyInquiry",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "문의 분류",
+        "tags": ["ai"]
+      }
+    },
+    "/api/v1/inquiries": {
+      "post": {
+        "operationId": "InquiriesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInquiryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "문의 생성",
+        "tags": ["inquiries"]
+      },
+      "get": {
+        "operationId": "InquiriesController_findAll",
+        "parameters": [
+          {
+            "name": "business_id",
+            "required": false,
+            "in": "query",
+            "description": "사업체 ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "channel_id",
+            "required": false,
+            "in": "query",
+            "description": "채널 ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customer_id",
+            "required": false,
+            "in": "query",
+            "description": "고객 ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "상태",
+            "schema": {
+              "enum": ["NEW", "IN_PROGRESS", "COMPLETED", "ON_HOLD"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "검색어 (메시지 텍스트)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_date",
+            "required": false,
+            "in": "query",
+            "description": "시작 날짜 (ISO 8601)",
+            "schema": {
+              "example": "2025-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "end_date",
+            "required": false,
+            "in": "query",
+            "description": "종료 날짜 (ISO 8601)",
+            "schema": {
+              "example": "2025-12-31",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호 (기본값: 1)",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지 크기 (기본값: 20)",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "정렬 필드 (기본값: received_at)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "정렬 방향 (asc/desc, 기본값: desc)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "문의 목록 조회",
+        "tags": ["inquiries"]
+      }
+    },
+    "/api/v1/inquiries/stats": {
+      "get": {
+        "operationId": "InquiriesController_getStats",
+        "parameters": [
+          {
+            "name": "business_id",
+            "required": true,
+            "in": "query",
+            "description": "사업체 ID",
+            "schema": {
+              "example": "clxxx123456789",
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_date",
+            "required": false,
+            "in": "query",
+            "description": "통계 시작 날짜 (ISO 8601 형식)",
+            "schema": {
+              "example": "2024-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "end_date",
+            "required": false,
+            "in": "query",
+            "description": "통계 종료 날짜 (ISO 8601 형식)",
+            "schema": {
+              "example": "2024-12-31",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "문의 통계 조회",
+        "tags": ["inquiries"]
+      }
+    },
+    "/api/v1/inquiries/{id}": {
+      "get": {
+        "operationId": "InquiriesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "문의 상세 조회",
+        "tags": ["inquiries"]
+      },
+      "patch": {
+        "operationId": "InquiriesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInquiryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "문의 업데이트",
+        "tags": ["inquiries"]
+      },
+      "delete": {
+        "operationId": "InquiriesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "문의 삭제",
+        "tags": ["inquiries"]
+      }
+    },
+    "/api/v1/inquiries/{id}/analyze": {
+      "post": {
+        "operationId": "InquiriesController_analyzeWithAi",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "AI 분석 실행",
+        "tags": ["inquiries"]
+      }
+    },
+    "/api/v1/customers": {
+      "post": {
+        "operationId": "CustomersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCustomerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "고객 생성",
+        "tags": ["customers"]
+      },
+      "get": {
+        "operationId": "CustomersController_findAll",
+        "parameters": [
+          {
+            "name": "business_id",
+            "required": false,
+            "in": "query",
+            "description": "사업체 ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "description": "플랫폼",
+            "schema": {
+              "enum": ["KAKAO", "LINE", "INSTAGRAM", "NAVER_TALK", "WEB_CHAT"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "검색어 (이름, 전화번호, 이메일)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_date",
+            "required": false,
+            "in": "query",
+            "description": "시작 날짜 (ISO 8601)",
+            "schema": {
+              "example": "2025-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "end_date",
+            "required": false,
+            "in": "query",
+            "description": "종료 날짜 (ISO 8601)",
+            "schema": {
+              "example": "2025-12-31",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호 (기본값: 1)",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지 크기 (기본값: 20)",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "정렬 필드 (기본값: last_contact)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "정렬 방향 (asc/desc, 기본값: desc)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "고객 목록 조회",
+        "tags": ["customers"]
+      }
+    },
+    "/api/v1/customers/stats": {
+      "get": {
+        "operationId": "CustomersController_getStats",
+        "parameters": [
+          {
+            "name": "business_id",
+            "required": true,
+            "in": "query",
+            "description": "사업체 ID",
+            "schema": {
+              "example": "clxxx123456789",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "고객 통계 조회",
+        "tags": ["customers"]
+      }
+    },
+    "/api/v1/customers/{id}": {
+      "get": {
+        "operationId": "CustomersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "고객 상세 조회",
+        "tags": ["customers"]
+      },
+      "patch": {
+        "operationId": "CustomersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCustomerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "고객 업데이트",
+        "tags": ["customers"]
+      },
+      "delete": {
+        "operationId": "CustomersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "고객 삭제",
+        "tags": ["customers"]
+      }
+    },
+    "/api/v1/customers/{sourceId}/merge/{targetId}": {
+      "post": {
+        "operationId": "CustomersController_mergeCustomers",
+        "parameters": [
+          {
+            "name": "sourceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "targetId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "고객 병합 (중복 제거)",
+        "tags": ["customers"]
+      }
+    },
+    "/api/v1/inquiry-replies": {
+      "post": {
+        "operationId": "InquiryRepliesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInquiryReplyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "답변이 생성되었습니다"
+          },
+          "400": {
+            "description": "잘못된 요청"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "답변 생성",
+        "tags": ["Inquiry Replies"]
+      },
+      "get": {
+        "operationId": "InquiryRepliesController_findAll",
+        "parameters": [
+          {
+            "name": "inquiry_id",
+            "required": false,
+            "in": "query",
+            "description": "문의 ID 필터",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sender_type",
+            "required": false,
+            "in": "query",
+            "description": "발신자 유형 필터",
+            "schema": {
+              "enum": ["AI", "HUMAN", "SYSTEM"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "is_sent",
+            "required": false,
+            "in": "query",
+            "description": "전송 완료 여부 필터",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지 크기",
+            "schema": {
+              "example": 20,
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "오프셋",
+            "schema": {
+              "example": 0,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "답변 목록 조회 성공"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "답변 목록 조회",
+        "tags": ["Inquiry Replies"]
+      }
+    },
+    "/api/v1/inquiry-replies/by-inquiry/{inquiryId}": {
+      "get": {
+        "operationId": "InquiryRepliesController_findByInquiryId",
+        "parameters": [
+          {
+            "name": "inquiryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "답변 이력 조회 성공"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "특정 문의에 대한 답변 이력 조회",
+        "tags": ["Inquiry Replies"]
+      }
+    },
+    "/api/v1/inquiry-replies/{id}": {
+      "get": {
+        "operationId": "InquiryRepliesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "답변 상세 조회 성공"
+          },
+          "404": {
+            "description": "답변을 찾을 수 없습니다"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "답변 상세 조회",
+        "tags": ["Inquiry Replies"]
+      },
+      "patch": {
+        "operationId": "InquiryRepliesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInquiryReplyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "답변이 업데이트되었습니다"
+          },
+          "404": {
+            "description": "답변을 찾을 수 없습니다"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "답변 업데이트",
+        "tags": ["Inquiry Replies"]
+      },
+      "delete": {
+        "operationId": "InquiryRepliesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "답변이 삭제되었습니다"
+          },
+          "404": {
+            "description": "답변을 찾을 수 없습니다"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "답변 삭제 (ADMIN)",
+        "tags": ["Inquiry Replies"]
+      }
+    },
+    "/api/v1/inquiry-replies/{id}/retry": {
+      "post": {
+        "operationId": "InquiryRepliesController_retry",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "답변 재시도 처리 완료"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "답변 재시도",
+        "tags": ["Inquiry Replies"]
+      }
+    },
+    "/api/v1/inquiry-replies/{id}/mark-sent": {
+      "post": {
+        "operationId": "InquiryRepliesController_markAsSent",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "전송 완료 처리됨"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "답변 전송 완료 처리",
+        "tags": ["Inquiry Replies"]
+      }
+    },
+    "/api/v1/inquiry-replies/{id}/mark-failed": {
+      "post": {
+        "operationId": "InquiryRepliesController_markAsFailed",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "전송 실패 처리됨"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "답변 전송 실패 처리",
+        "tags": ["Inquiry Replies"]
+      }
+    },
+    "/api/v1/channels": {
+      "post": {
+        "operationId": "ChannelsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChannelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "채널 생성",
+        "tags": ["channels"]
+      },
+      "get": {
+        "operationId": "ChannelsController_findAll",
+        "parameters": [
+          {
+            "name": "business_id",
+            "required": false,
+            "in": "query",
+            "description": "사업체 ID",
+            "schema": {
+              "example": "clxxx123456789",
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "description": "채널 플랫폼",
+            "schema": {
+              "example": "KAKAO",
+              "enum": ["KAKAO", "LINE"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "검색어 (채널명 또는 플랫폼 채널 ID)",
+            "schema": {
+              "example": "우리 회사",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "채널 목록 조회",
+        "tags": ["channels"]
+      }
+    },
+    "/api/v1/channels/{id}": {
+      "get": {
+        "operationId": "ChannelsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "채널 상세 조회",
+        "tags": ["channels"]
+      },
+      "patch": {
+        "operationId": "ChannelsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateChannelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "채널 업데이트",
+        "tags": ["channels"]
+      },
+      "delete": {
+        "operationId": "ChannelsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "채널 삭제",
+        "tags": ["channels"]
+      }
+    },
+    "/api/v1/channels/{id}/stats": {
+      "get": {
+        "operationId": "ChannelsController_getStats",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "채널 통계 조회",
+        "tags": ["channels"]
+      }
+    },
+    "/api/v1/channels/{id}/toggle-active": {
+      "post": {
+        "operationId": "ChannelsController_toggleActive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "채널 활성화/비활성화",
+        "tags": ["channels"]
+      }
+    },
+    "/api/v1/channels/{id}/toggle-auto-reply": {
+      "post": {
+        "operationId": "ChannelsController_toggleAutoReply",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "자동 응답 활성화/비활성화",
+        "tags": ["channels"]
+      }
+    },
+    "/api/v1/channels/{id}/regenerate-webhook": {
+      "post": {
+        "operationId": "ChannelsController_regenerateWebhookUrl",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Webhook URL 재생성",
+        "tags": ["channels"]
+      }
+    },
+    "/api/v1/businesses": {
+      "post": {
+        "operationId": "BusinessesController_create",
+        "parameters": [
+          {
+            "name": "user_id",
+            "required": true,
+            "in": "query",
+            "description": "사용자 ID (필수)",
+            "schema": {
+              "example": "user-12345678-90ab-cdef-1234-567890abcdef",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBusinessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "사업체(지점) 생성",
+        "tags": ["businesses"]
+      },
+      "get": {
+        "operationId": "BusinessesController_findAll",
+        "parameters": [
+          {
+            "name": "organization_id",
+            "required": true,
+            "in": "query",
+            "description": "조직 ID (필수)",
+            "schema": {
+              "example": "org-12345678-90ab-cdef-1234-567890abcdef",
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_id",
+            "required": false,
+            "in": "query",
+            "description": "사용자 ID (권한 확인용)",
+            "schema": {
+              "example": "user-12345678-90ab-cdef-1234-567890abcdef",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "사업체 목록 조회 (조직별)",
+        "tags": ["businesses"]
+      }
+    },
+    "/api/v1/businesses/{id}": {
+      "get": {
+        "operationId": "BusinessesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_id",
+            "required": false,
+            "in": "query",
+            "description": "사용자 ID (권한 확인용)",
+            "schema": {
+              "example": "user-12345678-90ab-cdef-1234-567890abcdef",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "사업체 상세 조회",
+        "tags": ["businesses"]
+      },
+      "patch": {
+        "operationId": "BusinessesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_id",
+            "required": false,
+            "in": "query",
+            "description": "사용자 ID (권한 확인용)",
+            "schema": {
+              "example": "user-12345678-90ab-cdef-1234-567890abcdef",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBusinessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "사업체 업데이트",
+        "tags": ["businesses"]
+      },
+      "delete": {
+        "operationId": "BusinessesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_id",
+            "required": false,
+            "in": "query",
+            "description": "사용자 ID (권한 확인용)",
+            "schema": {
+              "example": "user-12345678-90ab-cdef-1234-567890abcdef",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "사업체 삭제",
+        "tags": ["businesses"]
+      }
+    },
+    "/api/v1/businesses/{id}/dashboard": {
+      "get": {
+        "operationId": "BusinessesController_getDashboard",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_id",
+            "required": false,
+            "in": "query",
+            "description": "사용자 ID (권한 확인용)",
+            "schema": {
+              "example": "user-12345678-90ab-cdef-1234-567890abcdef",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "사업체 대시보드 통계",
+        "tags": ["businesses"]
+      }
+    },
+    "/api/v1/organizations": {
+      "post": {
+        "operationId": "OrganizationsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrganizationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "조직 생성",
+        "tags": ["organizations"]
+      },
+      "get": {
+        "operationId": "OrganizationsController_findMyOrganizations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "내 조직 목록 조회",
+        "tags": ["organizations"]
+      }
+    },
+    "/api/v1/organizations/{id}": {
+      "get": {
+        "operationId": "OrganizationsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "조직 상세 조회",
+        "tags": ["organizations"]
+      },
+      "patch": {
+        "operationId": "OrganizationsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrganizationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "조직 업데이트",
+        "tags": ["organizations"]
+      },
+      "delete": {
+        "operationId": "OrganizationsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "조직 삭제",
+        "tags": ["organizations"]
+      }
+    },
+    "/api/v1/organizations/{id}/members": {
+      "get": {
+        "operationId": "OrganizationsController_getMembers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "조직 멤버 목록 조회",
+        "tags": ["organizations"]
+      }
+    },
+    "/api/v1/organizations/{id}/members/invite": {
+      "post": {
+        "operationId": "OrganizationsController_inviteMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "멤버 초대",
+        "tags": ["organizations"]
+      }
+    },
+    "/api/v1/organizations/{id}/members/{userId}": {
+      "patch": {
+        "operationId": "OrganizationsController_updateMemberRole",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "멤버 역할 변경",
+        "tags": ["organizations"]
+      },
+      "delete": {
+        "operationId": "OrganizationsController_removeMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "멤버 제거",
+        "tags": ["organizations"]
+      }
+    },
+    "/api/v1/organizations/{id}/leave": {
+      "post": {
+        "operationId": "OrganizationsController_leaveOrganization",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "조직 나가기",
+        "tags": ["organizations"]
+      }
+    },
+    "/api/v1/organizations/{id}/invitations": {
+      "get": {
+        "operationId": "OrganizationsController_getPendingInvitations",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "대기 중인 초대 목록 조회",
+        "tags": ["organizations"]
+      }
+    },
+    "/api/v1/organizations/{id}/invitations/{invitationId}/resend": {
+      "post": {
+        "operationId": "OrganizationsController_resendInvitation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invitationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "초대 재전송",
+        "tags": ["organizations"]
+      }
+    },
+    "/api/v1/organizations/{id}/invitations/{invitationId}": {
+      "delete": {
+        "operationId": "OrganizationsController_cancelInvitation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invitationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "초대 취소",
+        "tags": ["organizations"]
+      }
+    },
+    "/api/v1/organizations/invitations/{token}/accept": {
+      "post": {
+        "operationId": "OrganizationsController_acceptInvitation",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "초대 수락",
+        "tags": ["organizations"]
+      }
+    },
+    "/api/v1/reply-templates": {
+      "post": {
+        "operationId": "ReplyTemplatesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReplyTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "템플릿이 생성되었습니다"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "답변 템플릿 생성",
+        "tags": ["Reply Templates"]
+      },
+      "get": {
+        "operationId": "ReplyTemplatesController_findAll",
+        "parameters": [
+          {
+            "name": "business_id",
+            "required": false,
+            "in": "query",
+            "description": "사업체 ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "문의 유형",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "검색어 (템플릿 이름 또는 내용)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "is_active",
+            "required": false,
+            "in": "query",
+            "description": "활성 상태",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호 (기본값: 1)",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지 크기 (기본값: 20)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "템플릿 목록이 조회되었습니다"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "답변 템플릿 목록 조회",
+        "tags": ["Reply Templates"]
+      }
+    },
+    "/api/v1/reply-templates/{id}": {
+      "get": {
+        "operationId": "ReplyTemplatesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "템플릿이 조회되었습니다"
+          },
+          "404": {
+            "description": "템플릿을 찾을 수 없습니다"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "답변 템플릿 상세 조회",
+        "tags": ["Reply Templates"]
+      },
+      "patch": {
+        "operationId": "ReplyTemplatesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReplyTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "템플릿이 수정되었습니다"
+          },
+          "404": {
+            "description": "템플릿을 찾을 수 없습니다"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "답변 템플릿 수정",
+        "tags": ["Reply Templates"]
+      },
+      "delete": {
+        "operationId": "ReplyTemplatesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "템플릿이 삭제되었습니다"
+          },
+          "404": {
+            "description": "템플릿을 찾을 수 없습니다"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "답변 템플릿 삭제 (소프트 삭제)",
+        "tags": ["Reply Templates"]
+      }
+    },
+    "/api/v1/reply-templates/{id}/increment-usage": {
+      "post": {
+        "operationId": "ReplyTemplatesController_incrementUsage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "사용 횟수가 증가되었습니다"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "템플릿 사용 횟수 증가",
+        "tags": ["Reply Templates"]
+      }
+    },
+    "/api/v1/industry-configs": {
+      "post": {
+        "operationId": "IndustryConfigsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIndustryConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "업종 설정이 생성되었습니다"
+          },
+          "400": {
+            "description": "잘못된 요청"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "업종 설정 생성 (ADMIN)",
+        "tags": ["Industry Configs"]
+      },
+      "get": {
+        "operationId": "IndustryConfigsController_findAll",
+        "parameters": [
+          {
+            "name": "industry",
+            "required": false,
+            "in": "query",
+            "description": "업종 타입 필터",
+            "schema": {
+              "enum": [
+                "HOSPITAL",
+                "DENTAL",
+                "DERMATOLOGY",
+                "PLASTIC_SURGERY",
+                "REAL_ESTATE",
+                "BEAUTY_SALON",
+                "ACADEMY",
+                "LAW_FIRM",
+                "OTHER"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "업종 설정 목록 조회 성공"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "업종 설정 목록 조회",
+        "tags": ["Industry Configs"]
+      }
+    },
+    "/api/v1/industry-configs/{id}": {
+      "get": {
+        "operationId": "IndustryConfigsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "업종 설정 상세 조회 성공"
+          },
+          "404": {
+            "description": "업종 설정을 찾을 수 없습니다"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "업종 설정 상세 조회",
+        "tags": ["Industry Configs"]
+      },
+      "patch": {
+        "operationId": "IndustryConfigsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateIndustryConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "업종 설정이 업데이트되었습니다"
+          },
+          "404": {
+            "description": "업종 설정을 찾을 수 없습니다"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "업종 설정 업데이트 (ADMIN)",
+        "tags": ["Industry Configs"]
+      },
+      "delete": {
+        "operationId": "IndustryConfigsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "업종 설정이 삭제되었습니다"
+          },
+          "404": {
+            "description": "업종 설정을 찾을 수 없습니다"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "업종 설정 삭제 (ADMIN)",
+        "tags": ["Industry Configs"]
+      }
+    },
+    "/api/v1/industry-configs/by-industry/{industry}": {
+      "get": {
+        "operationId": "IndustryConfigsController_findByIndustry",
+        "parameters": [
+          {
+            "name": "industry",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "업종 설정 조회 성공"
+          },
+          "404": {
+            "description": "업종 설정을 찾을 수 없습니다"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "업종별 설정 조회 (industry 기준)",
+        "tags": ["Industry Configs"]
+      }
+    },
+    "/api/v1/subscriptions": {
+      "post": {
+        "operationId": "SubscriptionsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubscriptionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "구독 생성",
+        "tags": ["subscriptions"]
+      },
+      "get": {
+        "operationId": "SubscriptionsController_findAll",
+        "parameters": [
+          {
+            "name": "plan",
+            "required": false,
+            "in": "query",
+            "description": "플랜 필터",
+            "schema": {
+              "enum": ["TRIAL", "BASIC", "PRO", "ENTERPRISE"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "상태 필터",
+            "schema": {
+              "enum": ["TRIAL", "ACTIVE", "PAST_DUE", "CANCELED", "EXPIRED"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "business_id",
+            "required": false,
+            "in": "query",
+            "description": "사업체 ID 필터",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "description": "페이지 크기",
+            "schema": {
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": true,
+            "in": "query",
+            "description": "오프셋",
+            "schema": {
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "구독 목록 조회",
+        "tags": ["subscriptions"]
+      }
+    },
+    "/api/v1/subscriptions/stats": {
+      "get": {
+        "operationId": "SubscriptionsController_getStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "구독 통계 조회",
+        "tags": ["subscriptions"]
+      }
+    },
+    "/api/v1/subscriptions/business/{businessId}": {
+      "get": {
+        "operationId": "SubscriptionsController_findByBusinessId",
+        "parameters": [
+          {
+            "name": "businessId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "사업체별 구독 조회",
+        "tags": ["subscriptions"]
+      }
+    },
+    "/api/v1/subscriptions/{id}": {
+      "get": {
+        "operationId": "SubscriptionsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "구독 상세 조회",
+        "tags": ["subscriptions"]
+      },
+      "patch": {
+        "operationId": "SubscriptionsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSubscriptionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "구독 업데이트",
+        "tags": ["subscriptions"]
+      }
+    },
+    "/api/v1/subscriptions/{id}/cancel": {
+      "post": {
+        "operationId": "SubscriptionsController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "구독 취소",
+        "tags": ["subscriptions"]
+      }
+    },
+    "/api/v1/subscriptions/{id}/reset-billing-cycle": {
+      "post": {
+        "operationId": "SubscriptionsController_resetBillingCycle",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "청구 주기 리셋 (관리자 전용)",
+        "tags": ["subscriptions"]
+      }
+    },
+    "/api/v1/payments": {
+      "post": {
+        "operationId": "PaymentsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "결제 생성",
+        "tags": ["payments"]
+      },
+      "get": {
+        "operationId": "PaymentsController_findAll",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "상태 필터",
+            "schema": {
+              "enum": ["PENDING", "COMPLETED", "FAILED", "REFUNDED"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "business_id",
+            "required": false,
+            "in": "query",
+            "description": "사업체 ID 필터",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subscription_id",
+            "required": false,
+            "in": "query",
+            "description": "구독 ID 필터",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "description": "페이지 크기",
+            "schema": {
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": true,
+            "in": "query",
+            "description": "오프셋",
+            "schema": {
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "결제 목록 조회",
+        "tags": ["payments"]
+      }
+    },
+    "/api/v1/payments/stats": {
+      "get": {
+        "operationId": "PaymentsController_getStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "결제 통계 조회",
+        "tags": ["payments"]
+      }
+    },
+    "/api/v1/payments/{id}": {
+      "get": {
+        "operationId": "PaymentsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "결제 상세 조회",
+        "tags": ["payments"]
+      },
+      "patch": {
+        "operationId": "PaymentsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "결제 업데이트",
+        "tags": ["payments"]
+      }
+    },
+    "/api/v1/payments/{id}/confirm": {
+      "post": {
+        "operationId": "PaymentsController_confirm",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "결제 확인",
+        "tags": ["payments"]
+      }
+    },
+    "/api/v1/error-logs": {
+      "get": {
+        "operationId": "ErrorLogsController_findAll",
+        "parameters": [
+          {
+            "name": "error_type",
+            "required": false,
+            "in": "query",
+            "description": "에러 유형",
+            "schema": {
+              "example": "webhook_error",
+              "type": "string"
+            }
+          },
+          {
+            "name": "resolved",
+            "required": false,
+            "in": "query",
+            "description": "해결 여부",
+            "schema": {
+              "example": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "user_id",
+            "required": false,
+            "in": "query",
+            "description": "사용자 ID",
+            "schema": {
+              "example": "user-12345678-90ab-cdef-1234-567890abcdef",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 항목 수",
+            "schema": {
+              "minimum": 1,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "에러 로그 목록 조회",
+        "tags": ["error-logs"]
+      }
+    },
+    "/api/v1/error-logs/stats": {
+      "get": {
+        "operationId": "ErrorLogsController_getStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "에러 로그 통계 조회",
+        "tags": ["error-logs"]
+      }
+    },
+    "/api/v1/error-logs/{id}": {
+      "get": {
+        "operationId": "ErrorLogsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "에러 로그 상세 조회",
+        "tags": ["error-logs"]
+      }
+    },
+    "/api/v1/error-logs/{id}/resolve": {
+      "patch": {
+        "operationId": "ErrorLogsController_resolve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveErrorLogDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "에러 로그 해결 처리",
+        "tags": ["error-logs"]
+      }
+    },
+    "/api/v1/webhook-events": {
+      "get": {
+        "operationId": "WebhookEventsController_findAll",
+        "parameters": [
+          {
+            "name": "channel_id",
+            "required": false,
+            "in": "query",
+            "description": "채널 ID",
+            "schema": {
+              "example": "channel-12345678-90ab-cdef-1234-567890abcdef",
+              "type": "string"
+            }
+          },
+          {
+            "name": "event_type",
+            "required": false,
+            "in": "query",
+            "description": "이벤트 유형",
+            "schema": {
+              "example": "message_received",
+              "type": "string"
+            }
+          },
+          {
+            "name": "processed",
+            "required": false,
+            "in": "query",
+            "description": "처리 여부",
+            "schema": {
+              "example": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 항목 수",
+            "schema": {
+              "minimum": 1,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "웹훅 이벤트 목록 조회",
+        "tags": ["webhook-events"]
+      }
+    },
+    "/api/v1/webhook-events/stats": {
+      "get": {
+        "operationId": "WebhookEventsController_getStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "웹훅 이벤트 통계 조회",
+        "tags": ["webhook-events"]
+      }
+    },
+    "/api/v1/webhook-events/{id}": {
+      "get": {
+        "operationId": "WebhookEventsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "웹훅 이벤트 상세 조회",
+        "tags": ["webhook-events"]
+      }
+    },
+    "/api/v1/webhook-events/{id}/retry": {
+      "post": {
+        "operationId": "WebhookEventsController_retry",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "웹훅 이벤트 재시도",
+        "tags": ["webhook-events"]
+      }
+    }
+  },
+  "info": {
+    "title": "AI 상담 매니저 API",
+    "description": "\n## AI 상담 매니저 API 문서\n\nAI 기반 자동 문의 관리 시스템 REST API\n\n### 주요 기능\n- 🤖 AI 기반 문의 자동 분석 및 답변\n- 💬 Kakao Talk, LINE 메시징 플랫폼 연동\n- 📊 실시간 문의 통계 및 대시보드\n- 👥 고객 관리 및 이력 추적\n- 🏢 멀티 테넌시 (사업체별 격리)\n\n### 인증\n모든 API는 JWT Bearer 토큰을 사용합니다.\n\n```\nAuthorization: Bearer <access_token>\n```\n\n### 에러 응답\n모든 에러는 다음 형식을 따릅니다:\n\n```json\n{\n  \"statusCode\": 400,\n  \"message\": \"에러 메시지\",\n  \"timestamp\": \"2025-01-16T10:00:00.000Z\",\n  \"path\": \"/api/endpoint\"\n}\n```\n\n### Rate Limiting\n- 기본: 100 requests / 60 seconds\n- Auth 엔드포인트: 10 requests / 60 seconds\n  ",
+    "version": "1.0.0",
+    "contact": {
+      "name": "AI Next Team",
+      "url": "https://ainext.com",
+      "email": "support@ainext.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "tags": [
+    {
+      "name": "auth",
+      "description": "인증 - 회원가입, 로그인, 토큰 갱신"
+    },
+    {
+      "name": "businesses",
+      "description": "사업체 - 사업체 관리 및 대시보드"
+    },
+    {
+      "name": "channels",
+      "description": "채널 - Kakao/LINE 채널 관리"
+    },
+    {
+      "name": "customers",
+      "description": "고객 - 고객 정보 및 이력 관리"
+    },
+    {
+      "name": "inquiries",
+      "description": "문의 - 문의 관리 및 AI 분석"
+    },
+    {
+      "name": "ai",
+      "description": "AI - AI 분석 및 답변 생성"
+    },
+    {
+      "name": "webhooks",
+      "description": "Webhooks - 메시징 플랫폼 Webhook"
+    },
+    {
+      "name": "health",
+      "description": "헬스체크 - 서버 상태 확인"
+    }
+  ],
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Development"
+    },
+    {
+      "url": "https://api.inquaire.com",
+      "description": "Production"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "JWT": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "name": "Authorization",
+        "description": "JWT 액세스 토큰을 입력하세요",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "SignupDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "이메일",
+            "example": "user@example.com"
+          },
+          "password": {
+            "type": "string",
+            "description": "비밀번호 (최소 8자, 대문자, 소문자, 숫자, 특수문자 포함)",
+            "example": "MyP@ssw0rd"
+          },
+          "name": {
+            "type": "string",
+            "description": "이름",
+            "example": "홍길동"
+          }
+        },
+        "required": ["email", "password", "name"]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "이메일",
+            "example": "user@example.com"
+          },
+          "password": {
+            "type": "string",
+            "description": "비밀번호",
+            "example": "password123"
+          }
+        },
+        "required": ["email", "password"]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "description": "Refresh Token"
+          }
+        },
+        "required": ["refresh_token"]
+      },
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "사용자 이름",
+            "example": "홍길동"
+          },
+          "email": {
+            "type": "string",
+            "description": "이메일",
+            "example": "user@example.com"
+          },
+          "phone": {
+            "type": "string",
+            "description": "연락처",
+            "example": "010-1234-5678"
+          }
+        }
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "description": "현재 비밀번호",
+            "example": "currentPassword123"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "새 비밀번호",
+            "example": "newPassword123",
+            "minLength": 8
+          }
+        },
+        "required": ["currentPassword", "newPassword"]
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "이메일",
+            "example": "user@example.com"
+          },
+          "password": {
+            "type": "string",
+            "description": "비밀번호 (최소 8자)",
+            "example": "password123"
+          },
+          "name": {
+            "type": "string",
+            "description": "이름",
+            "example": "홍길동"
+          },
+          "phone": {
+            "type": "string",
+            "description": "연락처 (옵션)"
+          },
+          "role": {
+            "type": "string",
+            "description": "역할",
+            "enum": ["USER", "ADMIN", "SUPER_ADMIN"],
+            "default": "USER"
+          }
+        },
+        "required": ["email", "password", "name", "role"]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "이메일"
+          },
+          "name": {
+            "type": "string",
+            "description": "이름"
+          },
+          "phone": {
+            "type": "string",
+            "description": "연락처"
+          }
+        }
+      },
+      "UpdateRoleDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "description": "변경할 역할",
+            "enum": ["USER", "ADMIN", "SUPER_ADMIN"]
+          }
+        },
+        "required": ["role"]
+      },
+      "KakaoWebhookDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "LineWebhookDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "NaverTalkTalkWebhookDto": {
+        "type": "object",
+        "properties": {
+          "partnerId": {
+            "type": "string",
+            "description": "네이버 톡톡 계정 ID",
+            "example": "partner_account_id"
+          },
+          "event": {
+            "type": "string",
+            "description": "이벤트 타입",
+            "enum": ["send", "open", "leave", "friend", "profile"],
+            "example": "send"
+          },
+          "user": {
+            "type": "object",
+            "description": "사용자 정보"
+          },
+          "textContent": {
+            "type": "object",
+            "description": "텍스트 메시지 내용"
+          },
+          "imageContent": {
+            "type": "object",
+            "description": "이미지 내용"
+          },
+          "options": {
+            "type": "object",
+            "description": "추가 옵션"
+          }
+        },
+        "required": ["partnerId", "event", "user"]
+      },
+      "InstagramWebhookDto": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "description": "항상 \"instagram\"",
+            "example": "instagram"
+          },
+          "entry": {
+            "type": "array",
+            "description": "웹훅 이벤트 엔트리 배열"
+          }
+        },
+        "required": ["object", "entry"]
+      },
+      "AnalyzeInquiryDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "분석할 메시지 텍스트",
+            "example": "안녕하세요, 임플란트 상담 받고 싶은데요. 이번 주 금요일 오후 2시쯤 가능할까요?"
+          },
+          "industryType": {
+            "type": "string",
+            "description": "산업 유형",
+            "enum": [
+              "HOSPITAL",
+              "REAL_ESTATE",
+              "DENTAL",
+              "DERMATOLOGY",
+              "PLASTIC_SURGERY",
+              "BEAUTY_SALON",
+              "ACADEMY",
+              "LAW_FIRM",
+              "OTHER"
+            ],
+            "example": "DENTAL"
+          },
+          "context": {
+            "type": "string",
+            "description": "추가 컨텍스트 (선택)",
+            "example": "고객은 기존에 충치 치료를 받은 적이 있음"
+          }
+        },
+        "required": ["message", "industryType"]
+      },
+      "CreateInquiryDto": {
+        "type": "object",
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "description": "사업체 ID",
+            "example": "bus-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "channel_id": {
+            "type": "string",
+            "description": "채널 ID",
+            "example": "ch-12345678-90ab-cdef-1234-567890abcdef"
+          },
+          "customer_id": {
+            "type": "string",
+            "description": "고객 ID",
+            "example": "cust-abcdef12-3456-7890-abcd-ef1234567890"
+          },
+          "message_text": {
+            "type": "string",
+            "description": "메시지 텍스트",
+            "example": "안녕하세요, 예약 문의 드립니다. 이번 주 토요일 오전 10시 가능할까요?"
+          },
+          "platform_message_id": {
+            "type": "string",
+            "description": "플랫폼 메시지 ID",
+            "example": "kakao_msg_123456789"
+          },
+          "extracted_info": {
+            "type": "object",
+            "description": "추출된 정보 (JSON)",
+            "example": {
+              "desired_date": "2025-11-23",
+              "desired_time": "오전",
+              "service_type": "예약"
+            }
+          }
+        },
+        "required": ["business_id", "channel_id", "customer_id", "message_text"]
+      },
+      "UpdateInquiryDto": {
+        "type": "object",
+        "properties": {
+          "reply_text": {
+            "type": "string",
+            "description": "답변 텍스트"
+          },
+          "status": {
+            "type": "string",
+            "description": "상태",
+            "enum": ["NEW", "IN_PROGRESS", "COMPLETED", "ON_HOLD"]
+          },
+          "summary": {
+            "type": "string",
+            "description": "요약"
+          },
+          "type": {
+            "type": "string",
+            "description": "문의 유형"
+          },
+          "notes": {
+            "type": "string",
+            "description": "관리자 메모"
+          },
+          "extracted_info": {
+            "type": "object",
+            "description": "추출된 정보 (JSON)"
+          }
+        }
+      },
+      "CreateCustomerDto": {
+        "type": "object",
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "description": "사업체 ID",
+            "example": "bus-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "platform_user_id": {
+            "type": "string",
+            "description": "플랫폼 사용자 ID",
+            "example": "kakao_user_123456789"
+          },
+          "platform": {
+            "type": "string",
+            "description": "플랫폼",
+            "enum": ["KAKAO", "LINE", "INSTAGRAM", "NAVER_TALK", "WEB_CHAT"],
+            "example": "KAKAO"
+          },
+          "name": {
+            "type": "string",
+            "description": "고객 이름",
+            "example": "김철수"
+          },
+          "phone": {
+            "type": "string",
+            "description": "전화번호",
+            "example": "010-1234-5678"
+          },
+          "email": {
+            "type": "string",
+            "description": "이메일",
+            "example": "customer@example.com"
+          },
+          "notes": {
+            "type": "string",
+            "description": "메모",
+            "example": "VIP 고객, 정기 예약 선호"
+          },
+          "tags": {
+            "description": "태그 (JSON 배열)",
+            "example": ["VIP", "정기고객", "병원"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "description": "메타데이터 (JSON)",
+            "example": {
+              "source": "kakao_ad_campaign",
+              "referrer": "naver_blog",
+              "preference": "weekend_appointments"
+            }
+          }
+        },
+        "required": ["business_id", "platform_user_id", "platform"]
+      },
+      "UpdateCustomerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "고객 이름"
+          },
+          "phone": {
+            "type": "string",
+            "description": "전화번호"
+          },
+          "email": {
+            "type": "string",
+            "description": "이메일"
+          },
+          "notes": {
+            "type": "string",
+            "description": "메모"
+          },
+          "tags": {
+            "description": "태그 (JSON 배열)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "description": "메타데이터 (JSON)"
+          }
+        }
+      },
+      "CreateInquiryReplyDto": {
+        "type": "object",
+        "properties": {
+          "inquiry_id": {
+            "type": "string",
+            "description": "문의 ID"
+          },
+          "message_text": {
+            "type": "string",
+            "description": "답변 메시지",
+            "example": "안녕하세요, 문의 주셔서 감사합니다."
+          },
+          "sender_type": {
+            "type": "string",
+            "description": "발신자 유형",
+            "enum": ["AI", "HUMAN", "SYSTEM"],
+            "example": "HUMAN"
+          },
+          "sender_id": {
+            "type": "string",
+            "description": "발신자 ID (관리자 ID, HUMAN인 경우 필수)"
+          },
+          "is_sent": {
+            "type": "boolean",
+            "description": "전송 완료 여부",
+            "example": false,
+            "default": false
+          }
+        },
+        "required": ["inquiry_id", "message_text", "sender_type"]
+      },
+      "UpdateInquiryReplyDto": {
+        "type": "object",
+        "properties": {
+          "message_text": {
+            "type": "string",
+            "description": "답변 메시지",
+            "example": "안녕하세요, 문의 주셔서 감사합니다."
+          },
+          "sender_type": {
+            "type": "string",
+            "description": "발신자 유형",
+            "enum": ["AI", "HUMAN", "SYSTEM"],
+            "example": "HUMAN"
+          },
+          "sender_id": {
+            "type": "string",
+            "description": "발신자 ID (관리자 ID, HUMAN인 경우 필수)"
+          },
+          "is_sent": {
+            "type": "boolean",
+            "description": "전송 완료 여부",
+            "example": false,
+            "default": false
+          }
+        }
+      },
+      "CreateChannelDto": {
+        "type": "object",
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "description": "사업체 ID",
+            "example": "bus-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "platform": {
+            "type": "string",
+            "description": "플랫폼",
+            "enum": ["KAKAO", "LINE", "INSTAGRAM", "NAVER_TALK", "WEB_CHAT"],
+            "example": "KAKAO"
+          },
+          "name": {
+            "type": "string",
+            "description": "채널 이름",
+            "example": "서울메디컬치과 카카오톡 채널"
+          },
+          "platform_channel_id": {
+            "type": "string",
+            "description": "플랫폼 채널 ID",
+            "example": "_xjAbCdEf"
+          },
+          "access_token": {
+            "type": "string",
+            "description": "액세스 토큰",
+            "example": "aBcDeFgHiJkLmNoPqRsTuVwXyZ1234567890"
+          },
+          "refresh_token": {
+            "type": "string",
+            "description": "리프레시 토큰",
+            "example": "rEfReSh_TokEN_1234567890aBcDeFgHiJkL"
+          },
+          "auto_reply_enabled": {
+            "type": "boolean",
+            "description": "자동 응답 활성화",
+            "example": true
+          },
+          "metadata": {
+            "type": "object",
+            "description": "메타데이터 (JSON)",
+            "example": {
+              "webhook_url": "https://api.inquaire.com/webhooks/kakao",
+              "bot_user_key": "bot_key_123456"
+            }
+          }
+        },
+        "required": ["business_id", "platform", "name", "platform_channel_id", "access_token"]
+      },
+      "UpdateChannelDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "채널 이름"
+          },
+          "access_token": {
+            "type": "string",
+            "description": "액세스 토큰"
+          },
+          "refresh_token": {
+            "type": "string",
+            "description": "리프레시 토큰"
+          },
+          "auto_reply_enabled": {
+            "type": "boolean",
+            "description": "자동 응답 활성화"
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "활성화 상태"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "메타데이터 (JSON)"
+          }
+        }
+      },
+      "CreateBusinessDto": {
+        "type": "object",
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "description": "소속 조직 ID",
+            "example": "org-12345678-90ab-cdef-1234-567890abcdef"
+          },
+          "name": {
+            "type": "string",
+            "description": "사업체명 (지점명)",
+            "example": "서울메디컬치과 강남점"
+          },
+          "industry_type": {
+            "type": "string",
+            "description": "산업 유형",
+            "enum": [
+              "HOSPITAL",
+              "DENTAL",
+              "DERMATOLOGY",
+              "PLASTIC_SURGERY",
+              "REAL_ESTATE",
+              "BEAUTY_SALON",
+              "ACADEMY",
+              "LAW_FIRM",
+              "OTHER"
+            ],
+            "example": "DENTAL"
+          },
+          "phone": {
+            "type": "string",
+            "description": "전화번호",
+            "example": "02-1234-5678"
+          },
+          "address": {
+            "type": "string",
+            "description": "주소",
+            "example": "서울특별시 강남구 테헤란로 123"
+          },
+          "website": {
+            "type": "string",
+            "description": "웹사이트",
+            "example": "https://www.seoulmedical.com"
+          },
+          "settings": {
+            "type": "object",
+            "description": "사업체 설정 (영업시간, 자동응답 등)",
+            "example": {
+              "business_hours": {
+                "mon": {
+                  "open": "09:00",
+                  "close": "18:00"
+                },
+                "tue": {
+                  "open": "09:00",
+                  "close": "18:00"
+                }
+              },
+              "auto_reply": true
+            }
+          }
+        },
+        "required": ["organization_id", "name", "industry_type"]
+      },
+      "UpdateBusinessDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "사업체명"
+          },
+          "industry_type": {
+            "type": "string",
+            "description": "산업 유형",
+            "enum": [
+              "HOSPITAL",
+              "DENTAL",
+              "DERMATOLOGY",
+              "PLASTIC_SURGERY",
+              "REAL_ESTATE",
+              "BEAUTY_SALON",
+              "ACADEMY",
+              "LAW_FIRM",
+              "OTHER"
+            ]
+          },
+          "business_registration_number": {
+            "type": "string",
+            "description": "사업자 등록번호"
+          },
+          "phone": {
+            "type": "string",
+            "description": "전화번호"
+          },
+          "email": {
+            "type": "string",
+            "description": "이메일"
+          },
+          "address": {
+            "type": "string",
+            "description": "주소"
+          },
+          "website": {
+            "type": "string",
+            "description": "웹사이트"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "메타데이터 (JSON)"
+          },
+          "settings": {
+            "type": "object",
+            "description": "사업체 설정 (JSON)",
+            "example": {
+              "autoReply": true,
+              "notificationEnabled": true
+            }
+          }
+        }
+      },
+      "CreateOrganizationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "조직 이름",
+            "example": "Acme Corporation"
+          },
+          "slug": {
+            "type": "string",
+            "description": "조직 슬러그 (URL-friendly identifier)",
+            "example": "acme-corp"
+          },
+          "logo_url": {
+            "type": "string",
+            "description": "조직 로고 URL",
+            "example": "https://example.com/logo.png"
+          },
+          "description": {
+            "type": "string",
+            "description": "조직 설명",
+            "example": "글로벌 AI 솔루션 기업"
+          }
+        },
+        "required": ["name"]
+      },
+      "UpdateOrganizationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "조직 이름",
+            "example": "Acme Corporation"
+          },
+          "slug": {
+            "type": "string",
+            "description": "조직 슬러그 (URL-friendly identifier)",
+            "example": "acme-corp"
+          },
+          "logo_url": {
+            "type": "string",
+            "description": "조직 로고 URL",
+            "example": "https://example.com/logo.png"
+          },
+          "description": {
+            "type": "string",
+            "description": "조직 설명",
+            "example": "글로벌 AI 솔루션 기업"
+          }
+        }
+      },
+      "InviteMemberDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "초대할 사용자 이메일",
+            "example": "user@example.com"
+          },
+          "role": {
+            "type": "string",
+            "description": "부여할 역할",
+            "enum": ["OWNER", "ADMIN", "MANAGER", "MEMBER", "VIEWER"],
+            "default": "MEMBER"
+          }
+        },
+        "required": ["email"]
+      },
+      "UpdateMemberRoleDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "description": "변경할 역할",
+            "enum": ["OWNER", "ADMIN", "MANAGER", "MEMBER", "VIEWER"]
+          }
+        },
+        "required": ["role"]
+      },
+      "CreateReplyTemplateDto": {
+        "type": "object",
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "description": "사업체 ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "템플릿 이름",
+            "example": "환영 메시지"
+          },
+          "type": {
+            "type": "string",
+            "description": "문의 유형 (선택)",
+            "example": "문의"
+          },
+          "content": {
+            "type": "string",
+            "description": "템플릿 내용",
+            "example": "안녕하세요 {{customer_name}}님, 문의 주셔서 감사합니다."
+          },
+          "variables": {
+            "description": "사용 가능한 변수 목록",
+            "example": ["customer_name", "business_name", "inquiry_type"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "활성 상태",
+            "example": true,
+            "default": true
+          }
+        },
+        "required": ["business_id", "name", "content"]
+      },
+      "UpdateReplyTemplateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "템플릿 이름",
+            "example": "환영 메시지"
+          },
+          "type": {
+            "type": "string",
+            "description": "문의 유형 (선택)",
+            "example": "문의"
+          },
+          "content": {
+            "type": "string",
+            "description": "템플릿 내용",
+            "example": "안녕하세요 {{customer_name}}님, 문의 주셔서 감사합니다."
+          },
+          "variables": {
+            "description": "사용 가능한 변수 목록",
+            "example": ["customer_name", "business_name", "inquiry_type"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "활성 상태",
+            "example": true
+          }
+        }
+      },
+      "CreateIndustryConfigDto": {
+        "type": "object",
+        "properties": {
+          "industry": {
+            "type": "string",
+            "description": "업종 타입",
+            "enum": [
+              "HOSPITAL",
+              "DENTAL",
+              "DERMATOLOGY",
+              "PLASTIC_SURGERY",
+              "REAL_ESTATE",
+              "BEAUTY_SALON",
+              "ACADEMY",
+              "LAW_FIRM",
+              "OTHER"
+            ],
+            "example": "HOSPITAL"
+          },
+          "display_name": {
+            "type": "string",
+            "description": "업종 표시 이름",
+            "example": "병원"
+          },
+          "inquiry_types": {
+            "type": "object",
+            "description": "문의 유형 정의 (JSON)",
+            "example": {
+              "types": ["예약", "상담", "문의"]
+            }
+          },
+          "system_prompt": {
+            "type": "string",
+            "description": "AI System Prompt",
+            "example": "당신은 병원 고객 문의를 처리하는 AI 어시스턴트입니다."
+          },
+          "extraction_schema": {
+            "type": "object",
+            "description": "정보 추출 스키마 (JSON)",
+            "example": {
+              "fields": ["name", "phone", "date"]
+            }
+          },
+          "default_templates": {
+            "type": "object",
+            "description": "기본 템플릿 (JSON, 선택)",
+            "example": {
+              "welcome": "안녕하세요",
+              "closing": "감사합니다"
+            }
+          }
+        },
+        "required": [
+          "industry",
+          "display_name",
+          "inquiry_types",
+          "system_prompt",
+          "extraction_schema"
+        ]
+      },
+      "UpdateIndustryConfigDto": {
+        "type": "object",
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "description": "업종 표시 이름",
+            "example": "병원"
+          },
+          "inquiry_types": {
+            "type": "object",
+            "description": "문의 유형 정의 (JSON)",
+            "example": {
+              "types": ["예약", "상담", "문의"]
+            }
+          },
+          "system_prompt": {
+            "type": "string",
+            "description": "AI System Prompt",
+            "example": "당신은 병원 고객 문의를 처리하는 AI 어시스턴트입니다."
+          },
+          "extraction_schema": {
+            "type": "object",
+            "description": "정보 추출 스키마 (JSON)",
+            "example": {
+              "fields": ["name", "phone", "date"]
+            }
+          },
+          "default_templates": {
+            "type": "object",
+            "description": "기본 템플릿 (JSON, 선택)",
+            "example": {
+              "welcome": "안녕하세요",
+              "closing": "감사합니다"
+            }
+          }
+        }
+      },
+      "CreateSubscriptionDto": {
+        "type": "object",
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "description": "사업체 ID"
+          },
+          "plan": {
+            "type": "string",
+            "description": "구독 플랜",
+            "enum": ["TRIAL", "BASIC", "PRO", "ENTERPRISE"]
+          },
+          "monthly_limit": {
+            "type": "number",
+            "description": "월 문의 제한",
+            "example": 1000
+          },
+          "trial_ends_at": {
+            "type": "string",
+            "description": "체험 종료일 (옵션)"
+          }
+        },
+        "required": ["business_id", "plan", "monthly_limit"]
+      },
+      "UpdateSubscriptionDto": {
+        "type": "object",
+        "properties": {
+          "plan": {
+            "type": "string",
+            "description": "구독 플랜",
+            "enum": ["TRIAL", "BASIC", "PRO", "ENTERPRISE"]
+          },
+          "status": {
+            "type": "string",
+            "description": "구독 상태",
+            "enum": ["TRIAL", "ACTIVE", "PAST_DUE", "CANCELED", "EXPIRED"]
+          },
+          "monthly_limit": {
+            "type": "number",
+            "description": "월 문의 제한"
+          }
+        }
+      },
+      "CreatePaymentDto": {
+        "type": "object",
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "description": "사업체 ID"
+          },
+          "subscription_id": {
+            "type": "string",
+            "description": "구독 ID (옵션)"
+          },
+          "amount": {
+            "type": "number",
+            "description": "금액 (원)",
+            "example": 29000
+          },
+          "currency": {
+            "type": "string",
+            "description": "통화",
+            "default": "KRW"
+          },
+          "payment_method": {
+            "type": "string",
+            "description": "결제 수단 (옵션)"
+          }
+        },
+        "required": ["business_id", "amount", "currency"]
+      },
+      "UpdatePaymentDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "결제 상태",
+            "enum": ["PENDING", "COMPLETED", "FAILED", "REFUNDED"]
+          },
+          "payment_key": {
+            "type": "string",
+            "description": "결제 키 (PG사)"
+          },
+          "failure_reason": {
+            "type": "string",
+            "description": "실패 사유"
+          }
+        }
+      },
+      "ResolveErrorLogDto": {
+        "type": "object",
+        "properties": {
+          "resolved": {
+            "type": "boolean",
+            "description": "해결 여부",
+            "example": true
+          }
+        },
+        "required": ["resolved"]
+      }
+    }
+  }
+}

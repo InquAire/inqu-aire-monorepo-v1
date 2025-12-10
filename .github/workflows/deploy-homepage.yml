@@ -1,0 +1,198 @@
+name: Deploy Homepage
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'apps/homepage/**'
+      - '.github/workflows/deploy-homepage.yml'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment target environment'
+        required: false
+        type: choice
+        default: Staging
+        options:
+          - Staging
+          - Production
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: homepage-${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'Production') || (github.ref == 'refs/heads/develop' && 'Staging') }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'Production') || (github.ref == 'refs/heads/develop' && 'Staging') }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'Production') || (github.ref == 'refs/heads/develop' && 'Staging') }}
+    env:
+      DEPLOY_ENV: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production') || (github.ref == 'refs/heads/develop' && 'staging') }}
+      BUILD_DIR: apps/homepage/dist
+      CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.HOMEPAGE_CLOUDFRONT_DISTRIBUTION_ID }}
+      AWS_S3_BUCKET: ${{ secrets.HOMEPAGE_S3_BUCKET }}
+      # 유니버셜 링크 설정을 위한 환경 변수
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      ANDROID_SHA256_FINGERPRINT: ${{ secrets.ANDROID_SHA256_FINGERPRINT }}
+      # Frontend runtime config
+      HOMEPAGE_API_BASE_URL: ${{ secrets.API_BASE_URL }}
+      HOMEPAGE_MIXPANEL_TOKEN: ${{ secrets.MIXPANEL_TOKEN }}
+    steps:
+      - name: Validate deployment target
+        run: |
+          if [ -z "${DEPLOY_ENV}" ]; then
+            echo 'Deployment environment not resolved' >&2
+            exit 1
+          fi
+          # 대소문자 무시하고 비교 및 소문자로 정규화
+          deploy_env_lower=$(echo "${DEPLOY_ENV}" | tr '[:upper:]' '[:lower:]')
+          if [ "${deploy_env_lower}" != "staging" ] && [ "${deploy_env_lower}" != "production" ]; then
+            echo "Unsupported environment: ${DEPLOY_ENV}" >&2
+            exit 1
+          fi
+          # 이후 스텝에서 일관되게 소문자로 사용하도록 재설정
+          echo "DEPLOY_ENV=${deploy_env_lower}" >> "$GITHUB_ENV"
+          echo "Deploying homepage to ${deploy_env_lower}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve pnpm version
+        id: pnpm-version
+        run: |
+          node -e "const fs = require('fs'); const spec = require('./package.json').packageManager || ''; const version = spec.split('@')[1]?.split('+')[0]; if (!version) { throw new Error('Unable to resolve pnpm version from packageManager'); } fs.appendFileSync(process.env.GITHUB_OUTPUT, 'version=' + version + '\\n');"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ steps.pnpm-version.outputs.version }}
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve universal links configuration
+        id: resolve-universal-links
+        run: |
+          if [ -z "${APPLE_TEAM_ID}" ]; then
+            echo "APPLE_TEAM_ID secret is not configured for ${DEPLOY_ENV}" >&2
+            exit 1
+          fi
+
+          if [ -z "${ANDROID_SHA256_FINGERPRINT}" ]; then
+            echo "ANDROID_SHA256_FINGERPRINT secret is not configured for ${DEPLOY_ENV}" >&2
+            exit 1
+          fi
+
+          echo "Universal links configuration validated for ${DEPLOY_ENV}"
+
+      - name: Setup universal links
+        run: |
+          echo "Setting up universal links for ${DEPLOY_ENV} environment..."
+          node apps/homepage/scripts/setup-universal-links.js
+        env:
+          DEPLOY_ENV: ${{ env.DEPLOY_ENV }}
+          APPLE_TEAM_ID: ${{ env.APPLE_TEAM_ID }}
+          ANDROID_SHA256_FINGERPRINT: ${{ env.ANDROID_SHA256_FINGERPRINT }}
+
+      - name: Resolve frontend runtime config
+        id: resolve-env
+        run: |
+          if [ -z "${HOMEPAGE_API_BASE_URL}" ]; then
+            echo "HOMEPAGE_API_BASE_URL secret is not configured for ${DEPLOY_ENV}" >&2
+            exit 1
+          fi
+
+          if [ -z "${HOMEPAGE_MIXPANEL_TOKEN}" ]; then
+            echo "HOMEPAGE_MIXPANEL_TOKEN secret is not configured for ${DEPLOY_ENV}" >&2
+            exit 1
+          fi
+
+          {
+            echo "api_base_url=${HOMEPAGE_API_BASE_URL}"
+            echo "mixpanel_token=${HOMEPAGE_MIXPANEL_TOKEN}"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "VITE_API_BASE_URL=${HOMEPAGE_API_BASE_URL}" >> "$GITHUB_ENV"
+          echo "VITE_MIXPANEL_TOKEN=${HOMEPAGE_MIXPANEL_TOKEN}" >> "$GITHUB_ENV"
+
+      - name: Build homepage
+        env:
+          # App Version (Git SHA)
+          VITE_APP_VERSION: ${{ github.sha }}
+        run: |
+          # DEPLOY_ENV는 Validate deployment target 스텝에서 소문자로 정규화됨
+          if [ "${DEPLOY_ENV}" = "staging" ]; then
+            echo "Building homepage for staging environment..."
+            pnpm --filter @ai-next/homepage... run build:staging
+          elif [ "${DEPLOY_ENV}" = "production" ]; then
+            echo "Building homepage for production environment..."
+            pnpm --filter @ai-next/homepage... run build:production
+          else
+            echo "Unknown deployment environment: ${DEPLOY_ENV}" >&2
+            exit 1
+          fi
+
+      - name: Resolve AWS configuration
+        id: resolve-aws
+        run: |
+          if [ -z "${AWS_REGION_SECRET}" ]; then
+            echo 'AWS region secret (HOMEPAGE_AWS_REGION) not configured for this environment.' >&2
+            exit 1
+          fi
+
+          if [ -z "${AWS_ROLE_ARN_SECRET}" ]; then
+            echo 'AWS role secret (HOMEPAGE_AWS_ROLE_ARN) not configured for this environment.' >&2
+            exit 1
+          fi
+
+          {
+            echo "region=${AWS_REGION_SECRET}"
+            echo "role=${AWS_ROLE_ARN_SECRET}"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "AWS_REGION=${AWS_REGION_SECRET}"
+            echo "AWS_ROLE_ARN=${AWS_ROLE_ARN_SECRET}"
+          } >> "$GITHUB_ENV"
+        env:
+          AWS_REGION_SECRET: ${{ secrets.HOMEPAGE_AWS_REGION }}
+          AWS_ROLE_ARN_SECRET: ${{ secrets.HOMEPAGE_AWS_ROLE_ARN }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ steps.resolve-aws.outputs.role }}
+          aws-region: ${{ steps.resolve-aws.outputs.region }}
+
+      - name: Upload static assets to S3
+        run: |
+          aws s3 sync "$BUILD_DIR" "s3://${{ secrets.HOMEPAGE_S3_BUCKET }}" --delete \
+            --exclude "*.html" \
+            --cache-control "max-age=31536000,public"
+          aws s3 sync "$BUILD_DIR" "s3://${{ secrets.HOMEPAGE_S3_BUCKET }}" --delete \
+            --exclude "*" \
+            --include "*.html" \
+            --cache-control "no-store"
+
+      - name: Invalidate CloudFront cache
+        if: ${{ env.CLOUDFRONT_DISTRIBUTION_ID != '' }}
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ env.CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --paths '/*'

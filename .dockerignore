@@ -1,0 +1,44 @@
+# .env files should not be in Docker images (except for build-time needs)
+# packages/prisma/.env is needed for Prisma generate during build, but will be removed before runtime
+# 일반적인 .env 파일 제외
+**/.env
+**/.env.*
+**/envs/.env*
+# packages/prisma/.env는 빌드 시점에 필요하므로 예외 처리 (나중에 명시하여 예외 적용)
+!packages/prisma/.env
+
+# Git
+.git
+.gitignore
+
+# Node modules (will be installed in container)
+node_modules
+
+# Build artifacts
+dist
+build
+.output
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+**/__tests__
+
+# Documentation
+*.md
+docs/
+

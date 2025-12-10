@@ -1,0 +1,79 @@
+name: inquaire-korean
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: pk_postgres
+    restart: unless-stopped
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-test}
+      TZ: Asia/Seoul
+    command: >
+      postgres -c config_file=/etc/postgresql/postgresql.conf
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/conf/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-test}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: pk_redis
+    restart: unless-stopped
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redispass}
+    command:
+      [
+        'redis-server',
+        '/usr/local/etc/redis/redis.conf',
+        '--requirepass',
+        '${REDIS_PASSWORD:-redispass}',
+      ]
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'PING']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  localstack:
+    image: localstack/localstack:4.6
+    container_name: pk_localstack
+    restart: unless-stopped
+    ports:
+      - '${LOCALSTACK_PORT:-4566}:4566'
+    environment:
+      - SERVICES=s3,sqs
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - DEBUG=0
+      - LS_LOG=warning
+      - LS_TMP_DIR=/var/lib/localstack/tmp
+      - LOCALSTACK_VOLUME_DIR=/var/lib/localstack
+    volumes:
+      - ./localstack/data:/var/lib/localstack
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - './localstack/bootstrap.sh:/etc/localstack/init/ready.d/bootstrap.sh:ro'
+    healthcheck:
+      test: ['CMD', 'bash', '-c', 'awslocal s3 ls >/dev/null 2>&1']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+networks:
+  default:
+    name: pk_net
+
+volumes:
+  pgdata:

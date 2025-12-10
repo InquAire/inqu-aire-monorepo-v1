@@ -1,0 +1,17 @@
+{
+  "root": [
+    "./src/index.ts",
+    "./src/commands/bastion.ts",
+    "./src/commands/bootstrap.ts",
+    "./src/commands/db.ts",
+    "./src/commands/env.ts",
+    "./src/commands/openapi.ts",
+    "./src/commands/stack.ts",
+    "./src/utils/env.ts",
+    "./src/utils/exec.ts",
+    "./src/utils/paths.ts",
+    "./src/validators/api-env.ts",
+    "./src/validators/prisma-env.ts"
+  ],
+  "version": "5.9.3"
+}

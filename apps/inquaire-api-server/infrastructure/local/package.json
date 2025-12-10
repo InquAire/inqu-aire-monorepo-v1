@@ -1,0 +1,13 @@
+{
+  "name": "@ai/infra",
+  "private": true,
+  "scripts": {
+    "dev:up": "docker compose up -d",
+    "dev:down": "docker compose down -v",
+    "logs:db": "docker logs -f pk_postgres",
+    "logs:ls": "docker logs -f pk_localstack",
+    "ps": "docker compose ps",
+    "status": "docker compose ps && echo '\n== Health ==' && docker inspect --format='{{.Name}} {{range .State.Health.Log}}{{println .Output}}{{end}}' $(docker compose ps -q) | sed 's#^/##'",
+    "init:localstack": "bash ./localstack/bootstrap.sh"
+  }
+}

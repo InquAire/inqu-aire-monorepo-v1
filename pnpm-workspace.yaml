@@ -1,0 +1,15 @@
+packages:
+  - apps/*
+  - packages/*
+  - tools/*
+  - infrastructure/*
+
+ignoredBuiltDependencies:
+  - '@nestjs/core'
+  - '@openapitools/openapi-generator-cli'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@scarf/scarf'
+  - bcrypt
+  - esbuild
+  - prisma

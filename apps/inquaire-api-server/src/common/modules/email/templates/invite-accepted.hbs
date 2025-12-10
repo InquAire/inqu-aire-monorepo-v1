@@ -1,0 +1,111 @@
+<html lang='ko'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>초대 수락 알림</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 40px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .logo {
+        font-size: 28px;
+        font-weight: bold;
+        color: #2563eb;
+      }
+      h1 {
+        color: #1f2937;
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+      .content {
+        margin-bottom: 30px;
+      }
+      .success-box {
+        background-color: #d1fae5;
+        border: 1px solid #10b981;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: center;
+      }
+      .success-box .icon {
+        font-size: 48px;
+        margin-bottom: 10px;
+      }
+      .success-box p {
+        margin: 0;
+        color: #065f46;
+        font-weight: 500;
+      }
+      .button {
+        display: inline-block;
+        background-color: #2563eb;
+        color: #ffffff !important;
+        text-decoration: none;
+        padding: 14px 28px;
+        border-radius: 6px;
+        font-weight: 600;
+        margin: 20px 0;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+        font-size: 12px;
+        color: #9ca3af;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='header'>
+        <div class='logo'>InquAire</div>
+      </div>
+
+      <h1>새 멤버가 합류했습니다!</h1>
+
+      <div class='content'>
+        <p>안녕하세요, {{inviterName}}님!</p>
+
+        <div class='success-box'>
+          <div class='icon'>&#127881;</div>
+          <p><strong>{{acceptedByName}}</strong>님이
+            <strong>{{organizationName}}</strong>
+            조직에 합류했습니다!</p>
+        </div>
+
+        <p>{{acceptedByName}}님이 귀하의 초대를 수락하고
+          {{organizationName}}
+          조직의 새 멤버가 되었습니다.</p>
+        <p>이제 팀원들과 함께 협업을 시작할 수 있습니다.</p>
+
+        <center>
+          <a href='{{appUrl}}/organizations' class='button'>조직 멤버 보기</a>
+        </center>
+      </div>
+
+      <div class='footer'>
+        <p>&copy; {{year}} InquAire. All rights reserved.</p>
+        <p>이 이메일은 {{inviterName}}님에게 발송되었습니다.</p>
+      </div>
+    </div>
+  </body>
+</html>
